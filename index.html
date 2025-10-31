@@ -422,10 +422,10 @@ const MENU = {
 function renderCategory(list, targetId, catKey){
   const root = el(targetId); root.innerHTML='';
   list.forEach(item=>{
-    const itemWithCat = { ...item, _catKey:catKey }; // 記住分類
-    const card=document.createElement('div');
-    card.className='card bg-white p-4 flex flex-col';
-    card.innerHTML=`
+    const itemWithCat = { ...item, _catKey: catKey }; // 記錄分類 key
+    const card = document.createElement('div');
+    card.className = 'card bg-white p-4 flex flex-col';
+    card.innerHTML = `
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
           <h3 class="text-base lg:text-lg font-semibold truncate">${item.name}</h3>
@@ -442,6 +442,7 @@ function renderCategory(list, targetId, catKey){
     root.appendChild(card);
   });
 }
+
 
 /* === 選項彈窗 === */
 let currentItem = null;
