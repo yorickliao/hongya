@@ -63,8 +63,6 @@
       color:#fff !important;  /* 被選中時反白 */
       border-color:#0f172a;
     }
-
-
   </style>
 </head>
 
@@ -100,9 +98,6 @@
     </div>
   </div>
 </nav>
-
-
-
 
 <main class="mx-auto container-slim px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
   <section class="lg:col-span-2 space-y-10">
@@ -160,8 +155,6 @@
       <div id="specialList" class="grid grid-cols-2 gap-4"></div>
     </div>
 
-    
-  
     <!-- 愛吃自己配（A 色） -->
     <div class="cat-wrap cat-a">
       <div class="cat-header">
@@ -180,7 +173,7 @@
       <div id="snacksList" class="grid grid-cols-2 gap-4"></div>
     </div>
   
-    <!-- 飲料/研磨咖啡（A 色） -->
+    <!-- 飲料/研磨咖啡（A/B 色） -->
     <div class="cat-wrap cat-a">
       <div class="cat-header">
         <span class="cat-swatch"></span>
@@ -189,7 +182,6 @@
       <div id="drinksList" class="grid grid-cols-2 gap-4"></div>
     </div>
 
-    <!-- 研磨咖啡（B 色） -->
     <div class="cat-wrap cat-b">
       <div class="cat-header">
         <span class="cat-swatch"></span>
@@ -198,7 +190,6 @@
       <div id="coffeeList" class="grid grid-cols-2 gap-4"></div>
     </div>
   </section>
-
 
   <aside id="cart"
     class="space-y-6 lg:sticky lg:top-[88px] lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto lg:pr-1"
@@ -237,7 +228,7 @@
           <select id="pickupSelect"
                   class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900">
           </select>
-          <p id="pickupHint" class="text-xs text-slate-500 mt-1">營業時段：16:00–20:00；每 15 分鐘一個時段。</p>
+          <p id="pickupHint" class="text-xs text-slate-500 mt-1">營業時段：05:30–13:00；每 15 分鐘一個時段。</p>
           <p id="offHourMsg" class="text-sm text-amber-700 mt-2 hidden-imp"></p>
         </div>
 
@@ -299,7 +290,7 @@
 <footer class="border-t border-slate-200 mt-12">
   <div class="mx-auto container-slim px-4 py-6 text-sm text-slate-600">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <div>© <span id="year"></span> 招金</div>
+      <div>© <span id="year"></span> 弘爺安南長安店</div>
     </div>
   </div>
 </footer>
@@ -322,8 +313,8 @@ function mapApiError(errCode, serverMessage){
   return serverMessage || '送單失敗，請稍後再試';
 }
 
-/* === 參數：營業時間 === */
-const BUSINESS = { startHour:16, endHour:20, intervalMin:15 };
+/* === 參數：營業時間（早餐店） === */
+const BUSINESS = { startHour:5, endHour:13, intervalMin:15 };
 
 /* === 分類規則（一般類：漢堡/吐司/蛋餅/總匯/客製） === */
 const CATEGORY_OPTION_RULES = {
@@ -431,7 +422,6 @@ const MENU = {
     { id:"toast_ham_egg",        name:"火腿蛋吐司",     price:40 },
     { id:"toast_cheese_egg",     name:"起司蛋吐司",     price:35 },
     { id:"toast_plain_egg",      name:"吐司夾蛋",       price:30 },
-    // 果醬吐司改為彈窗選口味
     { id:"toast_jam",            name:"果醬吐司",       price:20, tag:"jam" },
     { id:"toast_garlic",         name:"厚片吐司（香蒜）", price:35 },
     { id:"toast_matcha",         name:"厚片吐司（抹茶）", price:40 },
@@ -543,28 +533,11 @@ const MENU = {
   ],
 };
 
-/* 飲料 meta（杯型/冰熱限制 & 加價基準） */
-const DRINKS_META = {
-  drink_black_tea:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
-  drink_milk_tea:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
-  drink_soy_milk:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
-  drink_barley_milk:      { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
-  drink_rice_milk:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
-  drink_orange_juice:     { baseSize:'M', sizes:['M','L','XL'], temps:['ice']      },
-  drink_cranberry_juice:  { baseSize:'M', sizes:['M','L','XL'], temps:['ice']      },
-  drink_fresh_milk_tea:   { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] },
-  drink_barley_milk_milk: { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] },
-  drink_soy_milk_tea:     { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] },
-  drink_cocoa_milk:       { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] },
-  drink_thai_milk_tea:    { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] },
-  drink_cold_brew_tea:    { baseSize:'L', sizes:['L','XL'],     temps:['ice']      },
-};
-
-
 /* === 飲料規則（杯型/冰熱） ===
    baseSize: 'M' | 'L'  用來決定 +5/+10 的基準
    sizes:    允許的杯型（M/L/XL）
    temps:    允許的溫度（ice/hot）
+   注意：此區塊只能宣告一次，避免 const 重複造成 JS 中斷
 */
 const DRINKS_META = {
   drink_black_tea:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
@@ -625,7 +598,6 @@ function renderCategory(list, targetId, catKey){
     root.appendChild(card);
   });
 }
-
 
 /* === 選項彈窗 === */
 let currentItem = null;
@@ -839,7 +811,6 @@ function buildDrinkControls(item, containerSel='#pmOptions'){
 
 /* === 研磨咖啡：固定 M/L 價（不套 +5/+10）=== */
 const COFFEE_PRICE = {
-  // 以 MENU.coffee 的 price 為「中杯價」，大杯價可在此獨立設定（照 PDF 可自行調）
   coffee_drip:      { M:50, L:60 },
   coffee_americano: { M:40, L:50 },
   coffee_latte:     { M:40, L:55 },
@@ -1065,14 +1036,14 @@ function renderCart(){
   el('#cartTotal').textContent=money(cartTotal());
 }
 
-/* === 外帶：時段產生（16:00-20:00，每15分） === */
+/* === 外帶：時段產生（05:30-13:00，每15分） === */
 function generateSlots(dateObj = new Date()){
   const y = dateObj.getFullYear();
   const m = dateObj.getMonth();
   const d = dateObj.getDate();
   const slots = [];
-  const start = new Date(y, m, d, BUSINESS.startHour, 0, 0);
-  const end   = new Date(y, m, d, BUSINESS.endHour, 0, 0);
+  const start = new Date(y, m, d, BUSINESS.startHour, 30, 0); // 05:30
+  const end   = new Date(y, m, d, BUSINESS.endHour, 0, 0);    // 13:00
   for (let t = new Date(start); t <= end; t = new Date(t.getTime() + BUSINESS.intervalMin*60000)) {
     slots.push(new Date(t));
   }
@@ -1097,10 +1068,11 @@ function fillPickupSelect(){
   sel.value = '';
 
   const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), BUSINESS.startHour, 0, 0);
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), BUSINESS.startHour, 30, 0);
   const end   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), BUSINESS.endHour, 0, 0);
   const offHour = now < start || now > end;
   offMsg.classList.toggle('hidden-imp', !offHour);
+  if (offHour) offMsg.textContent = '目前非營業時段（05:30–13:00），可先下單選擇時段。';
 }
 function roundUpTo15min(date){
   const ms = BUSINESS.intervalMin*60000;
@@ -1127,7 +1099,7 @@ async function fetchMenuStatus(force=false){
     const r = await fetch(url);
     const d = await r.json();
     const byName = new Map();
-    for (const it of d.items||[]) if (it.name) byName.set(String(it.name), !!it.soldOut);
+    for (const it of (d.items||[])) if (it.name) byName.set(String(it.name), !!it.soldOut);
     SOLDOUT_CACHE = { ts: now, byName };
   }catch{
     SOLDOUT_CACHE = { ts: now, byName: new Map() };
@@ -1303,8 +1275,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderCategory(MENU.club,    '#clubList',    'club');
   renderCategory(MENU.special, '#specialList', 'special');
   renderCategory(MENU.custom,  '#customList',  'custom');
-  renderCategory(MENU.snacks,  '#snacksList',  'snacks');   // ★ 新增
-  renderCategory(MENU.coffee,  '#coffeeList',  'coffee');   // ★ 新增
+  renderCategory(MENU.snacks,  '#snacksList',  'snacks');
+  renderCategory(MENU.coffee,  '#coffeeList',  'coffee');
   renderCategory(MENU.drinks,  '#drinksList',  'drinks');
 
   (async ()=>{ await enforceSoldOutOnMenu(true); setInterval(()=> enforceSoldOutOnMenu(false), SOLDOUT_TTL_MS); })();
@@ -1334,8 +1306,8 @@ const CATEGORY_SECTIONS = [
   { key:'club',    label:'總匯',       listSel:'#clubList',    color:'#242d47' },
   { key:'special', label:'店長推薦',   listSel:'#specialList', color:'#c9141a' },
   { key:'custom',  label:'愛吃自己配', listSel:'#customList',  color:'#242d47' },
-  { key:'snacks',  label:'美味小點',   listSel:'#snacksList',  color:'#c9141a' },  // ★
-  { key:'coffee',  label:'研磨咖啡',   listSel:'#coffeeList',  color:'#242d47' },  // ★
+  { key:'snacks',  label:'美味小點',   listSel:'#snacksList',  color:'#c9141a' },
+  { key:'coffee',  label:'研磨咖啡',   listSel:'#coffeeList',  color:'#242d47' },
   { key:'drinks',  label:'飲料',       listSel:'#drinksList',  color:'#c9141a' },
 ];
 
