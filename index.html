@@ -908,19 +908,19 @@ function buildSetmealControls(item){
   // 行為：選了飲品才顯示杯型/冰熱（沿用 buildDrinkControls 規則）
   const list = root.querySelector('#set_drink_list');
   const opts = root.querySelector('#set_drink_opts');
-  list.addEventListener('change', e=>{
+  list.addEventListener('change', ()=>{
     const id = root.querySelector('input[name="opt_set_drink"]:checked')?.value;
     if (!id) { opts.classList.add('hidden'); opts.innerHTML=''; return; }
     const tmpItem = { id, _catKey:'drinks' };
-    // 若某筆自帶 meta（如無糖綠茶），臨時覆寫 DRINKS_META
     const metaExtra = SETMEAL_DRINKS.find(x=>x.id===id)?.meta;
-    if (metaExtra) DRINKS_META[id] = metaExtra;
+    if (metaExtra) DRINKS_META[id] = metaExtra; // 如需覆寫飲料 meta
     buildDrinkControls(tmpItem, '#set_drink_opts');
     opts.classList.remove('hidden');
-    // 讓小計立刻重算（openItemModal 裡對 #pmOptions 做了委派 onchange）
+    // 讓小計立刻重算（openItemModal 裡對 #pmOptions 有委派 onchange）
     document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
-    
-  // 3) ★ 套餐附加選項（依特定套餐顯示：醬汁/口味）
+  }); // ← 這一行是你原本缺少的 "});"
+
+  // 3) ★ 套餐附加選項（依特定套餐顯示：醬汁/口味；不加價，只記錄）
   const extra = SETMEAL_EXTRA_RULES[item.id];
   if (extra) {
     const optHtml = extra.options.map(v => `<option value="${v}">${v}</option>`).join('');
@@ -937,6 +937,7 @@ function buildSetmealControls(item){
     `);
   }
 }
+
 
 /* === 讀取各類型的選擇 & 計價 === */
 function readSelectionsFor(item){
