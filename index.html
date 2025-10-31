@@ -765,25 +765,52 @@ const SOLDOUT_TTL_MS = 30 * 1000;
 
 async function fetchMenuStatus(force=false){
   const now = Date.now();
+
+  // 沒設定 ENDPOINT：回傳空資料，前端正常運作
+  if (!ENDPOINT) {
+    SOLDOUT_CACHE = { ts: now, byName: new Map() };
+    return SOLDOUT_CACHE;
+  }
+
   if (!force && (now - SOLDOUT_CACHE.ts) < SOLDOUT_TTL_MS) return SOLDOUT_CACHE;
+
   const url = `${ENDPOINT}?action=menu&_=${now}&apiKey=${API_KEY}`;
   const r = await fetch(url);
   const t = await r.text();
-  let d; try{ d = JSON.parse(t);}catch{ throw new Error('menu 回應格式錯誤'); }
-  if (!d.ok) throw new Error(d.error||'menu_failed');
+
+  let d; 
+  try { d = JSON.parse(t); } 
+  catch { 
+    // 讀不到就當無售完
+    SOLDOUT_CACHE = { ts: now, byName: new Map() };
+    return SOLDOUT_CACHE;
+  }
+
+  if (!d.ok) {
+    SOLDOUT_CACHE = { ts: now, byName: new Map() };
+    return SOLDOUT_CACHE;
+  }
 
   const byName = new Map();
-  for(const it of d.items||[]){
+  for (const it of d.items || []) {
     if (it.name) byName.set(String(it.name), !!it.soldOut);
   }
   SOLDOUT_CACHE = { ts: now, byName };
   return SOLDOUT_CACHE;
 }
+
 async function isSoldOut(name){
   const { byName } = await fetchMenuStatus(false);
   return !!byName.get(name);
 }
-async function checkSoldOutByName(name){ return isSoldOut(name); }
+async function checkSoldOutByName(name){
+  try {
+    return await isSoldOut(name);
+  } catch {
+    return false;
+  }
+}
+
 
 /* 把售完狀態套用到「選擇」按鈕（不改事件；顯示不可點徽章） */
 async function enforceSoldOutOnMenu(force = false) {
