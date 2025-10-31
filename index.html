@@ -550,23 +550,20 @@ const DRINKS_META = {
   drink_cold_brew_tea:    { baseSize:'L', sizes:['L','XL'],     temps:['ice']      }, // 只有冰
 };
 
-/* === 套餐可選飲品（第一版；你要調整價差直接改這裡） ===
-   add: 加價（以套餐含小紅茶為基準）
-   限制杯型/冰熱仍沿用 DRINKS_META（若沒列就用一般規則）
-*/
+// 用餐升級飲品（以套餐含「小杯紅茶」為基準的加價）
 const SETMEAL_DRINKS = [
   { id:'drink_black_tea',        label:'紅茶',        add:0  },
-  { id:'drink_unsweet_green',    label:'無糖綠茶',    add:0,  meta:{ baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] } },
   { id:'drink_milk_tea',         label:'奶茶',        add:5  },
   { id:'drink_soy_milk',         label:'豆漿',        add:5  },
   { id:'drink_barley_milk',      label:'薏仁漿',      add:5  },
-  { id:'drink_orange_juice',     label:'柳橙汁',      add:0  },
-  { id:'drink_cranberry_juice',  label:'蔓越莓汁',    add:0  },
+  { id:'drink_rice_milk',        label:'米漿',        add:5  },
+  { id:'drink_orange_juice',     label:'柳橙汁',      add:0  },  // 只供冰
+  { id:'drink_cranberry_juice',  label:'蔓越莓汁',    add:0  },  // 只供冰
   { id:'drink_fresh_milk_tea',   label:'鮮奶茶',      add:15 },
-  { id:'drink_soy_milk_tea',     label:'豆漿紅茶',    add:15 },
   { id:'drink_barley_milk_milk', label:'薏仁牛奶',    add:15 },
   { id:'drink_cocoa_milk',       label:'可可亞牛奶',  add:30 },
-  { id:'drink_cold_brew_tea',    label:'冷泡茶',      add:10 },
+  { id:'drink_thai_milk_tea',    label:'泰式奶茶',    add:35 },
+  { id:'drink_cold_brew_tea',    label:'冷泡茶',      add:10 },  // 只供冰
 ];
 
 /* === Render：分類卡片（帶入分類 key，讓彈窗知道走哪組規則） === */
