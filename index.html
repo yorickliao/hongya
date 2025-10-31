@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>招金 線上點餐</title>
+  <title>弘爺早餐安南長安店 線上點餐</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <meta name="color-scheme" content="light">
   <style>
@@ -74,9 +74,9 @@
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 bg-slate-900 text-white rounded-xl grid place-items-center text-lg font-bold select-none">招</div>
       <div>
-        <div class="text-xl font-semibold">招金 線上點餐</div>
-        <div class="text-xs text-slate-500">營業時間: 每週二、三、四 16:00-20:00（每15分鐘為一時段）</div>
-        <div class="text-xs text-slate-500">每人內用低消50元，禁帶外食</div>
+        <div class="text-xl font-semibold">弘爺早餐安南長安店 線上點餐</div>
+        <div class="text-xs text-slate-500">營業時間: 每日 05:30 - 13:00</div>
+        <div class="text-xs text-slate-500">台南市安南區長和路二段12巷277弄6號 06-3561258</div>
       </div>
     </div>
     <a href="#cart" class="btn px-3 py-2 border border-slate-300 hover:bg-slate-100">購物車</a>
@@ -87,19 +87,26 @@
 <nav id="categoryBar"
      class="sticky z-40 bg-white/90 backdrop-blur border-b border-slate-200">
   <div class="mx-auto container-slim px-4 py-2">
+    
     <div class="flex gap-2 overflow-x-auto no-scrollbar">
       <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0"
-              data-cat="hotpot" style="color:#242d47">鍋燒系列</button>
+              data-cat="setmeal" style="color:#242d47">套餐</button>
       <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0"
-              data-cat="full"   style="color:#c9141a">呷飽飽系列</button>
+              data-cat="burger"  style="color:#c9141a">漢堡</button>
       <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0"
-              data-cat="soup"   style="color:#242d47">喝湯</button>
+              data-cat="toast"   style="color:#242d47">烤土司</button>
       <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0"
-              data-cat="donut"  style="color:#c9141a">呷甜</button>
+              data-cat="omelet"  style="color:#c9141a">蛋餅</button>
       <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0"
-              data-cat="tea"    style="color:#242d47">喝茶</button>
-      
+              data-cat="club"    style="color:#242d47">總匯</button>
+      <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0"
+              data-cat="special" style="color:#c9141a">店長推薦</button>
+      <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0"
+              data-cat="custom"  style="color:#242d47">愛吃自己配</button>
+      <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0"
+              data-cat="drinks"  style="color:#c9141a">飲料/研磨咖啡</button>
     </div>
+
   </div>
 </nav>
 
@@ -107,53 +114,79 @@
 
 <main class="mx-auto container-slim px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
   <section class="lg:col-span-2 space-y-10">
-    <!-- 鍋燒系列（類別 A 色） -->
+    <!-- 套餐（A 色） -->
     <div class="cat-wrap cat-a">
       <div class="cat-header">
         <span class="cat-swatch"></span>
-        <h2 class="text-lg font-semibold flex items-center gap-2">鍋燒系列</h2>
+        <h2 class="text-lg font-semibold flex items-center gap-2">套餐</h2>
       </div>
-      <div id="hotpotList" class="grid grid-cols-2 gap-4"></div>
+      <div id="setmealList" class="grid grid-cols-2 gap-4"></div>
     </div>
-
-    <!-- 呷飽飽系列（類別 B 色） -->
+  
+    <!-- 漢堡（B 色） -->
     <div class="cat-wrap cat-b">
       <div class="cat-header">
         <span class="cat-swatch"></span>
-        <h2 class="text-lg font-semibold">呷飽飽系列</h2>
+        <h2 class="text-lg font-semibold">漢堡</h2>
       </div>
-      <div id="fullList" class="grid grid-cols-2 gap-4"></div>
+      <div id="burgerList" class="grid grid-cols-2 gap-4"></div>
     </div>
-
-    <!-- 喝湯（類別 A 色） -->
+  
+    <!-- 烤土司（A 色） -->
     <div class="cat-wrap cat-a">
       <div class="cat-header">
         <span class="cat-swatch"></span>
-        <h2 class="text-lg font-semibold">喝湯</h2>
+        <h2 class="text-lg font-semibold">烤土司</h2>
       </div>
-      <div id="soupList" class="grid grid-cols-2 gap-4"></div>
+      <div id="toastList" class="grid grid-cols-2 gap-4"></div>
     </div>
-
-    <!-- 呷甜（類別 B 色） -->
+  
+    <!-- 蛋餅（B 色） -->
     <div class="cat-wrap cat-b">
       <div class="cat-header">
         <span class="cat-swatch"></span>
-        <h2 class="text-lg font-semibold">呷甜（甜甜圈）</h2>
+        <h2 class="text-lg font-semibold">蛋餅</h2>
       </div>
-      <div id="donutList" class="grid grid-cols-2 gap-4"></div>
+      <div id="omeletList" class="grid grid-cols-2 gap-4"></div>
     </div>
-
-    <!-- 喝茶（類別 A 色） -->
+  
+    <!-- 總匯（A 色） -->
     <div class="cat-wrap cat-a">
       <div class="cat-header">
         <span class="cat-swatch"></span>
-        <h2 class="text-lg font-semibold">喝茶</h2>
+        <h2 class="text-lg font-semibold">總匯</h2>
       </div>
-      <div id="teaList" class="grid grid-cols-2 gap-4"></div>
+      <div id="clubList" class="grid grid-cols-2 gap-4"></div>
     </div>
-
-    
+  
+    <!-- 店長推薦（B 色） -->
+    <div class="cat-wrap cat-b">
+      <div class="cat-header">
+        <span class="cat-swatch"></span>
+        <h2 class="text-lg font-semibold">店長推薦</h2>
+      </div>
+      <div id="specialList" class="grid grid-cols-2 gap-4"></div>
+    </div>
+  
+    <!-- 愛吃自己配（A 色） -->
+    <div class="cat-wrap cat-a">
+      <div class="cat-header">
+        <span class="cat-swatch"></span>
+        <h2 class="text-lg font-semibold">愛吃自己配</h2>
+      </div>
+      <div id="customList" class="grid grid-cols-2 gap-4"></div>
+    </div>
+  
+    <!-- 飲料/研磨咖啡（B 色） -->
+    <div class="cat-wrap cat-b">
+      <div class="cat-header">
+        <span class="cat-swatch"></span>
+        <h2 class="text-lg font-semibold">飲料/研磨咖啡</h2>
+      </div>
+      <div id="drinksList" class="grid grid-cols-2 gap-4"></div>
+    </div>
   </section>
+
 
   <aside id="cart"
     class="space-y-6 lg:sticky lg:top-[88px] lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto lg:pr-1"
@@ -261,8 +294,8 @@
 
 <script>
 /* === 設定（請替換為你的 GAS 部署網址 / API Key）=== */
-const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxTtrXkCFN2jQjCTVOW1AfxUEKC2CbhN8Kg098Clj29S0TVfL0dpzdDH1RV4BS3xm4WLQ/exec';
-const API_KEY  = 'zhaojin';
+const ENDPOINT = '';
+const API_KEY  = 'hongya';
 
 /* === 工具 & 狀態 === */
 const el = s => document.querySelector(s);
@@ -285,54 +318,41 @@ const HOTPOT_STAPLES = ["意麵","雞絲","冬粉","泡麵","飯"];
 
 /* === 菜單 === */
 const MENU = {
-  hotpot: [
+  setmeal: [
     { id:"hp_orig",   name:"原味鍋燒",     price:80,  requireStaple:true },
     { id:"hp_kimchi", name:"泡菜鍋燒",     price:85,  requireStaple:true },
-    { id:"hp_thai",   name:"泰式鍋燒",     price:95,  requireStaple:true },
-    { id:"hp_clam",   name:"蛤蜊爆棚鍋燒", price:150, requireStaple:true },
-    { id:"hp_shrimp", name:"有夠蝦鍋燒",   price:150, requireStaple:true },
-    { id:"hp_purine", name:"通痛風鍋燒",   price:170, requireStaple:true },
+    
   ],
-  full: [
+  burger: [
     { id:"full_minced_pork_rice", name:"懷舊肉燥飯",   price:35,  noStaple:true },
     { id:"full_rice_noodle",      name:"古味炒米粉",   price:40,  noStaple:true },
-    { id:"full_kongrou",          name:"復刻爌肉飯",   price:70,  noStaple:true },
-    { id:"full_basil_pork",       name:"台式打拋豬",   price:70,  noStaple:true },
-    { id:"full_mixed_chicken",    name:"肉燥雞絲飯",   price:65,  noStaple:true },
-    { id:"full_thai_chicken",     name:"泰式雞絲飯",   price:60,  noStaple:true },
-    { id:"full_stir_chicken",     name:"香炒雞肉片飯", price:75,  noStaple:true },
-    { id:"full_curry",            name:"招金咖喱飯",   price:75,  noStaple:true },
-    { id:"full_fried_instant",    name:"炒泡麵",       price:75,  noStaple:true },
-    { id:"full_bbq_box",          name:"巴比Ｑ烤肉餐盒", price:85, noStaple:true },
-    { id:"full_greenonion_pork",  name:"蔥爆豬肉",     price:85,  noStaple:true },
-    { id:"full_pan_chicken_leg",  name:"香煎雞腿",     price:85,  noStaple:true },
-    { id:"full_chili_chicken",    name:"椒麻雞腿",     price:85,  noStaple:true },
-    { id:"full_pan_pork_chop",    name:"香煎排骨",     price:85,  noStaple:true },
-    { id:"full_fried_chicken_lu", name:"炸雞滷肉飯",   price:80,  noStaple:true },
-    { id:"full_crispy_chicken",   name:"香酥雞排飯",   price:70,  noStaple:true },
+    
   ],
-  soup: [
+  toast: [
     { id:"soup_egg",      name:"蛋花湯",       price:30, noStaple:true },
     { id:"soup_meatball", name:"貢丸湯",       price:30, noStaple:true },
-    { id:"soup_seaweed",  name:"紫菜蛋花湯",   price:40, noStaple:true },
-    { id:"soup_clam",     name:"蛤仔湯",       price:40, noStaple:true },
   ],
-  tea: [
+  omelet: [
     { id:"tea_black",   name:"紅茶",   price:30, noStaple:true },
     { id:"tea_winter",  name:"冬瓜茶", price:30, noStaple:true },
   ],
-  donut: [
+  club: [
     { id:"donut_orig",     name:"原味甜甜圈",     price:30, noStaple:true },
     { id:"donut_peanut",   name:"花生甜甜圈",     price:40, noStaple:true },
-    { id:"donut_straw",    name:"草莓甜甜圈",     price:35, noStaple:true },
-    { id:"donut_cheese",   name:"起司甜甜圈",     price:45, noStaple:true },
-    { id:"donut_secret",   name:"隱藏版甜甜圈",   price:50, noStaple:true },
-    { id:"donut_garlic",   name:"蒜香甜甜圈",     price:35, noStaple:true },
-    { id:"donut_choco",    name:"巧克力甜甜圈",   price:35, noStaple:true },
-    { id:"donut_milk",     name:"奶酥甜甜圈",     price:35, noStaple:true },
-    { id:"donut_mochi",    name:"麻糬甜甜圈",     price:45, noStaple:true },
-    { id:"donut_taro",     name:"芋頭甜甜圈",     price:45, noStaple:true },
   ],
+  special: [
+    { id:"donut_orig",     name:"原味甜甜圈",     price:30, noStaple:true },
+    { id:"donut_peanut",   name:"花生甜甜圈",     price:40, noStaple:true },
+  ],
+  custom: [
+    { id:"donut_orig",     name:"原味甜甜圈",     price:30, noStaple:true },
+    { id:"donut_peanut",   name:"花生甜甜圈",     price:40, noStaple:true },
+  ],
+  drinks: [
+    { id:"donut_orig",     name:"原味甜甜圈",     price:30, noStaple:true },
+    { id:"donut_peanut",   name:"花生甜甜圈",     price:40, noStaple:true },
+  ],
+  
 };
 
 /* === Render：分類卡片（保留結構與 id，不動你的流程） === */
@@ -776,11 +796,15 @@ document.addEventListener('DOMContentLoaded',()=>{
   fetchMenuStatus(true).catch(()=>{});
 
 
-  renderCategory(MENU.hotpot,'#hotpotList');
-  renderCategory(MENU.full,'#fullList');
-  renderCategory(MENU.soup,'#soupList');
-  renderCategory(MENU.donut,'#donutList');
-  renderCategory(MENU.tea,'#teaList');
+  renderCategory(MENU.setmeal, '#setmealList');
+  renderCategory(MENU.burger,  '#burgerList');
+  renderCategory(MENU.toast,   '#toastList');
+  renderCategory(MENU.omelet,  '#omeletList');
+  renderCategory(MENU.club,    '#clubList');
+  renderCategory(MENU.special, '#specialList');
+  renderCategory(MENU.custom,  '#customList');
+  renderCategory(MENU.drinks,  '#drinksList');
+
   
 
   // 初始套用一次售完狀態，之後每 30 秒刷新一次
@@ -812,13 +836,16 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* ===== 分類快速選擇：錨點、捲動、著色、選中狀態 ===== */
 const CATEGORY_SECTIONS = [
-  { key:'hotpot', label:'鍋燒系列', listSel:'#hotpotList', color:'#242d47' },
-  { key:'full',   label:'呷飽飽系列', listSel:'#fullList', color:'#c9141a' },
-  { key:'soup',   label:'喝湯',       listSel:'#soupList',  color:'#242d47' },
-  { key:'donut',  label:'呷甜',       listSel:'#donutList', color:'#c9141a' },
-  { key:'tea',    label:'喝茶',       listSel:'#teaList',   color:'#242d47' },
-  
+  { key:'setmeal', label:'套餐',           listSel:'#setmealList', color:'#242d47' },
+  { key:'burger',  label:'漢堡',           listSel:'#burgerList',  color:'#c9141a' },
+  { key:'toast',   label:'烤土司',         listSel:'#toastList',   color:'#242d47' },
+  { key:'omelet',  label:'蛋餅',           listSel:'#omeletList',  color:'#c9141a' },
+  { key:'club',    label:'總匯',           listSel:'#clubList',    color:'#242d47' },
+  { key:'special', label:'店長推薦',       listSel:'#specialList', color:'#c9141a' },
+  { key:'custom',  label:'愛吃自己配',     listSel:'#customList',  color:'#242d47' },
+  { key:'drinks',  label:'飲料/研磨咖啡', listSel:'#drinksList',  color:'#c9141a' },
 ];
+
 
 /* 幫每個分類標題加錨點（不改你原 HTML 結構） */
 /* 幫每個分類標題加錨點（符合你現在的 .cat-wrap / .cat-header 結構） */
