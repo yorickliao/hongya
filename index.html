@@ -363,7 +363,7 @@ const CATEGORY_OPTION_RULES = {
   coffee: []
 };
 
-/* === 菜單（依 PDF；果醬吐司改成單一品項 toast_jam） === */
+/* === 菜單 === */
 const MENU = {
   setmeal: [
     { id:"set_american_pork",          name:"美式大豬堡套餐",   price:120 },
@@ -420,8 +420,8 @@ const MENU = {
     { id:"toast_ham_egg",        name:"火腿蛋吐司",     price:40 },
     { id:"toast_cheese_egg",     name:"起司蛋吐司",     price:35 },
     { id:"toast_plain_egg",      name:"吐司夾蛋",       price:30 },
-    { id:"toast_jam",            name:"果醬吐司",       price:20, tag:"jam" },
-    { id:"thin_toast_garlic",    name:"香蒜吐司",       price:25 },
+    { id:"toast_jam_series",   name:"果醬吐司", price:20, tag:"jam_series" },
+    { id:"toast_thick_series", name:"厚片吐司", price:30, tag:"thick_series" },
     { id:"toast_garlic",         name:"厚片吐司（香蒜）", price:35 },
     { id:"toast_matcha",         name:"厚片吐司（抹茶）", price:40 },
     { id:"toast_cocoa",          name:"厚片吐司（可可）", price:40 },
@@ -622,8 +622,10 @@ function openItemModal(item){
       buildCoffeeControls(item);
     } else if (item._catKey === 'setmeal') {
       buildSetmealControls(item);
-    } else if (item._catKey === 'toast' && item.tag === 'jam') {
-      buildJamToastControls();     // 果醬吐司選口味
+    } else if (item._catKey === 'toast' && item.tag === 'jam_series') {
+      buildToastSeriesControls('jam');
+    } else if (item._catKey === 'toast' && item.tag === 'thick_series') {
+      buildToastSeriesControls('thick');// 果醬吐司選口味
     } else {
       buildOptionControls(item._catKey); // 一般類
     }
@@ -753,20 +755,31 @@ function buildOptionControls(catKey){
     }
   });
 }
+// 果醬吐司（基價 20）：香蒜 +5 其餘 +0
+const JAM_FLAVORS = [
+  { value:"草莓", add:0 }, { value:"奶酥", add:0 }, { value:"巧克力", add:0 },
+  { value:"奶油", add:0 }, { value:"花生", add:0 }, { value:"香蒜", add:5 },
+];
 
-/* === 果醬吐司：彈窗選口味 === */
-function buildJamToastControls(){
+// 厚片吐司（基價 30）：香蒜 +5；可可/抹茶/牛奶 +10；其餘 +0
+const THICK_FLAVORS = [
+  { value:"草莓", add:0 }, { value:"奶酥", add:0 }, { value:"巧克力", add:0 },
+  { value:"奶油", add:0 }, { value:"花生", add:0 }, { value:"香蒜", add:5 },
+  { value:"可可", add:10 }, { value:"抹茶", add:10 }, { value:"牛奶", add:10 },
+];
+// 共用的系列口味彈窗
+function buildToastSeriesControls(series){ // series: 'jam' | 'thick'
   const root = el('#pmOptions'); root.innerHTML = '';
+  const list = series === 'jam' ? JAM_FLAVORS : THICK_FLAVORS;
+  const options = list.map(f=>`<option value="${f.value}" data-add="${f.add}">
+    ${f.value}${f.add?`（+${f.add}）`:''}
+  </option>`).join('');
   root.insertAdjacentHTML('beforeend', `
     <div>
       <label class="text-sm text-slate-600">口味</label>
-      <select id="opt_jam_flavor" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
-              data-kind="jam">
-        <option value="草莓">草莓</option>
-        <option value="巧克力">巧克力</option>
-        <option value="花生">花生</option>
-        <option value="奶油">奶油</option>
-        <option value="奶酥">奶酥</option>
+      <select id="opt_toast_flavor"
+              class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900">
+        ${options}
       </select>
     </div>
   `);
@@ -953,12 +966,16 @@ function readSelectionsFor(item){
     }
     return { optionDelta: delta, optionSummary: parts.join('｜') };
   }
-
-  // 果醬吐司
-  if (item._catKey === 'toast' && item.tag === 'jam'){
-    const sel = el('#opt_jam_flavor');
-    const taste = sel?.value || '';
-    return { optionDelta: 0, optionSummary: taste?`口味：${taste}`:'' };
+  // 系列吐司（果醬/厚片）：依口味加價
+  if (item._catKey === 'toast' && (item.tag === 'jam_series' || item.tag === 'thick_series')){
+    const sel = el('#opt_toast_flavor');
+    let delta = 0, parts = [];
+    if (sel){
+      const opt = sel.selectedOptions[0];
+      delta += Number(opt.dataset.add || 0);
+      parts.push('口味：' + opt.value);
+    }
+    return { optionDelta: delta, optionSummary: parts.join('｜') };
   }
 
   // 一般類（漢堡/吐司/蛋餅/總匯/客製）
