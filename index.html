@@ -313,52 +313,116 @@ function mapApiError(errCode, serverMessage){
 /* === 參數：營業時間 === */
 const BUSINESS = { startHour:16, endHour:20, intervalMin:15 };
 
-/* === 鍋燒主食選項 === */
+/* === 主食選項（若某品需要） === */
 const HOTPOT_STAPLES = ["意麵","雞絲","冬粉","泡麵","飯"];
 
-/* === 菜單 === */
-const MENU = {
-  setmeal: [
-    { id:"hp_orig",   name:"原味鍋燒",     price:80,  requireStaple:true },
-    { id:"hp_kimchi", name:"泡菜鍋燒",     price:85,  requireStaple:true },
-    
-  ],
+/* === 分類選項規則（會自動生成 UI 與加價）===
+  類型：
+   - toggle: 勾選加價；fields: key, label, price
+   - choice: 單選（Select）；fields: key, label, options:[{label, price, value}]
+   - enum:   單選（Select，無加價）；fields: key, label, options:[{label, value}]
+*/
+const CATEGORY_OPTION_RULES = {
+  // 套餐、店長推薦：只有備註與數量（留空）
+  setmeal: [],
+  special: [],
+
+  // 「美味小點」若未來要加：key 建議設為 snacks
+  snacks: [],
+
+  // 漢堡：加蛋+15、加起司+10、麵包換圓形帕瑪森+10
   burger: [
-    { id:"full_minced_pork_rice", name:"懷舊肉燥飯",   price:35,  noStaple:true },
-    { id:"full_rice_noodle",      name:"古味炒米粉",   price:40,  noStaple:true },
-    
+    { type:'toggle', key:'egg',   label:'加蛋',   price:15 },
+    { type:'toggle', key:'cheese',label:'加起司', price:10 },
+    { type:'choice', key:'bread', label:'麵包',   options:[
+      { label:'方形漢堡（預設）', value:'方形漢堡', price:0 },
+      { label:'圓形帕瑪森',       value:'圓形帕瑪森', price:10 },
+    ]},
   ],
+
+  // 烤土司：加起司+15、換鬆餅+15
   toast: [
-    { id:"soup_egg",      name:"蛋花湯",       price:30, noStaple:true },
-    { id:"soup_meatball", name:"貢丸湯",       price:30, noStaple:true },
+    { type:'toggle', key:'cheese', label:'加起司', price:15 },
+    { type:'choice', key:'base',   label:'主體',   options:[
+      { label:'吐司（預設）', value:'吐司', price:0 },
+      { label:'鬆餅',         value:'鬆餅', price:15 },
+    ]},
   ],
+
+  // 蛋餅：加起司+10
   omelet: [
-    { id:"tea_black",   name:"紅茶",   price:30, noStaple:true },
-    { id:"tea_winter",  name:"冬瓜茶", price:30, noStaple:true },
+    { type:'toggle', key:'cheese', label:'加起司', price:10 },
   ],
+
+  // 總匯：加起司+10
   club: [
-    { id:"donut_orig",     name:"原味甜甜圈",     price:30, noStaple:true },
-    { id:"donut_peanut",   name:"花生甜甜圈",     price:40, noStaple:true },
+    { type:'toggle', key:'cheese', label:'加起司', price:10 },
   ],
-  special: [
-    { id:"donut_orig",     name:"原味甜甜圈",     price:30, noStaple:true },
-    { id:"donut_peanut",   name:"花生甜甜圈",     price:40, noStaple:true },
-  ],
+
+  // 愛吃自己配：麵包體（帕瑪森/捲餅/香頌/燒餅），加蛋+15，加起司+10
   custom: [
-    { id:"donut_orig",     name:"原味甜甜圈",     price:30, noStaple:true },
-    { id:"donut_peanut",   name:"花生甜甜圈",     price:40, noStaple:true },
+    { type:'choice', key:'bread', label:'麵包體', options:[
+      { label:'帕瑪森', value:'帕瑪森', price:0 },
+      { label:'捲餅',   value:'捲餅',   price:0 },
+      { label:'香頌',   value:'香頌',   price:0 },
+      { label:'燒餅',   value:'燒餅',   price:0 },
+    ]},
+    { type:'toggle', key:'egg',    label:'加蛋',   price:15 },
+    { type:'toggle', key:'cheese', label:'加起司', price:10 },
   ],
+
+  // 飲料/研磨咖啡：尺寸（中0/大+5/特大+10）、溫度（冰/熱，無加價）
   drinks: [
-    { id:"donut_orig",     name:"原味甜甜圈",     price:30, noStaple:true },
-    { id:"donut_peanut",   name:"花生甜甜圈",     price:40, noStaple:true },
+    { type:'choice', key:'size', label:'尺寸', options:[
+      { label:'中杯',  value:'中',  price:0 },
+      { label:'大杯',  value:'大',  price:5 },
+      { label:'特大杯',value:'特大',price:10 },
+    ]},
+    { type:'enum', key:'temp', label:'溫度', options:[
+      { label:'冰', value:'冰' },
+      { label:'熱', value:'熱' },
+    ]},
   ],
-  
 };
 
-/* === Render：分類卡片（保留結構與 id，不動你的流程） === */
-function renderCategory(list, targetId){
+/* === 菜單（範例；等你晚點補正式品項即可）=== */
+const MENU = {
+  setmeal: [
+    { id:"set_a", name:"活力套餐A", price:95 },
+    { id:"set_b", name:"元氣套餐B", price:110 },
+  ],
+  burger: [
+    { id:"burg_bacon_egg", name:"培根蛋漢堡", price:55 },
+    { id:"burg_ham",       name:"火腿漢堡",   price:45 },
+  ],
+  toast: [
+    { id:"toast_pork",     name:"豬排吐司", price:50 },
+    { id:"toast_chicken",  name:"雞排吐司", price:55 },
+  ],
+  omelet: [
+    { id:"omelet_corn",    name:"玉米蛋餅", price:40 },
+    { id:"omelet_tuna",    name:"鮪魚蛋餅", price:45 },
+  ],
+  club: [
+    { id:"club_classic",   name:"經典總匯", price:80 },
+  ],
+  special: [
+    { id:"sp_hot",         name:"店長熱推", price:70 },
+  ],
+  custom: [
+    { id:"custom_build",   name:"客製主餐", price:60 },
+  ],
+  drinks: [
+    { id:"drip_coffee",    name:"研磨咖啡", price:35 },
+    { id:"milk_tea",       name:"奶茶",     price:30 },
+  ],
+};
+
+/* === Render：分類卡片（帶入分類 key，讓彈窗知道走哪組規則） === */
+function renderCategory(list, targetId, catKey){
   const root = el(targetId); root.innerHTML='';
   list.forEach(item=>{
+    const itemWithCat = { ...item, _catKey:catKey }; // 記住分類
     const card=document.createElement('div');
     card.className='card bg-white p-4 flex flex-col';
     card.innerHTML=`
@@ -374,27 +438,29 @@ function renderCategory(list, targetId){
           選擇
         </button>
       </div>`;
-    card.querySelector('.choose-btn').addEventListener('click', ()=> openItemModal(item));
+    card.querySelector('.choose-btn').addEventListener('click', ()=> openItemModal(itemWithCat));
     root.appendChild(card);
   });
 }
 
-/* === 選項彈窗（僅鍋燒系列顯示主食，其餘只有數量與備註） === */
+/* === 選項彈窗 === */
 let currentItem = null;
 function openItemModal(item){
   // 再次檢查是否售完（避免 race）
   checkSoldOutByName(item.name).then(sold=>{
     if (sold) {
       alert('此品項已售完');
-      enforceSoldOutOnMenu(true); // 立刻刷新按鈕狀態
+      enforceSoldOutOnMenu(true);
       return;
     }
     currentItem = item;
     ensureItemModal();
     document.body.classList.add('overflow-hidden');
 
+    // 標題
     el('#pmTitle').textContent = item.name;
 
+    // 是否需要「主食」（保留原功能；目前你的早餐類不會用到）
     const stapleWrap = el('#pmStapleWrap');
     const stapleSel  = el('#pmStaple');
     const needStaple = !!item.requireStaple;
@@ -406,26 +472,56 @@ function openItemModal(item){
       });
     }
 
-    el('#pmRemark').value = '';
+    // 動態選項（依分類規則）
+    buildOptionControls(item._catKey);
 
+    // 備註 & 數量
+    el('#pmRemark').value = '';
     const qtyInput = el('#pmQty'); qtyInput.value = 1;
+
+    // 小計：基礎價 + 加價（依目前 UI 勾選）
     const updatePmSubtotal = ()=>{
       const qty = Math.max(1, parseInt(qtyInput.value)||1);
-      const subtotal = item.price * qty;
-      el('#pmSubtotal').textContent = money(subtotal);
+      const unit = calcUnitPrice(item);
+      el('#pmSubtotal').textContent = money(unit * qty);
     };
     el('#pmDec').onclick = ()=>{ qtyInput.value = Math.max(1, (parseInt(qtyInput.value)||1) - 1); updatePmSubtotal(); };
     el('#pmInc').onclick = ()=>{ qtyInput.value = (parseInt(qtyInput.value)||1) + 1; updatePmSubtotal(); };
     qtyInput.oninput = updatePmSubtotal;
+    // 任何選項變化也要重算
+    el('#pmOptions').querySelectorAll('input,select').forEach(ctrl=>{
+      ctrl.addEventListener('change', updatePmSubtotal);
+    });
     updatePmSubtotal();
 
     el('#pmAdd').onclick = async ()=>{
       const sold = await checkSoldOutByName(item.name);
       if (sold) { alert('此品項已售完'); enforceSoldOutOnMenu(true); return; }
+
       const qty    = Math.max(1, parseInt(qtyInput.value)||1);
       const staple = needStaple ? el('#pmStaple').value : '';
       const remark = (el('#pmRemark')?.value || '').trim();
-      addToCart({ item, qty, remark, staple, needStaple });
+
+      // 讀取選項 → 價差與說明
+      const { optionDelta, optionSummary } = readOptionSelections(item._catKey);
+
+      // 以「加價後單價」建一份放進購物車的 item 副本
+      const itemForCart = { ...item, price: item.price + optionDelta };
+
+      // 把選項摘要與主食寫進顯示名稱（後端現在把 name 帶過去）
+      const staplePart = needStaple ? `｜主食：${staple || '-'}` : '';
+      const optsPart   = optionSummary ? `｜${optionSummary}` : '';
+      const remarkPart = remark ? `｜備註：${remark}` : '';
+
+      addToCart({
+        item: itemForCart,
+        qty,
+        remark,
+        staple,
+        needStaple,
+        _optionText: (optsPart || '')
+      });
+
       closeItemModal();
     };
 
@@ -444,7 +540,7 @@ function ensureItemModal(){
   wrap.innerHTML = `
     <div class="absolute inset-0 bg-black/40"></div>
     <div class="relative z-10 min-h-full flex items-start justify-center py-6 px-3">
-      <div class="w-full max-w-2xl card bg-white p-6 max-h-[85vh] scroll-y">
+      <div class="w-full max-w-2xl card bg-white p-6 max-h:[85vh] scroll-y">
         <div class="flex items-start justify-between">
           <div class="min-w-0">
             <h3 id="pmTitle" class="text-xl font-semibold"></h3>
@@ -457,7 +553,10 @@ function ensureItemModal(){
           <select id="pmStaple" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"></select>
         </div>
 
-        <div class="mt-5">
+        <!-- 動態選項容器 -->
+        <div id="pmOptions" class="mt-4 space-y-4"></div>
+
+        <div class="mt-2">
           <label class="text-sm text-slate-600">備註（選填）</label>
           <textarea id="pmRemark" rows="2"
             class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
@@ -484,13 +583,94 @@ function ensureItemModal(){
   wrap.querySelector('#pmClose').addEventListener('click', closeItemModal);
 }
 
+/* === 動態選項：UI 生成 / 讀取 / 計價 === */
+function buildOptionControls(catKey){
+  const root = el('#pmOptions'); root.innerHTML = '';
+  const rules = CATEGORY_OPTION_RULES[catKey] || [];
+  rules.forEach(rule=>{
+    if (rule.type === 'toggle'){
+      const id = `opt_${rule.key}`;
+      root.insertAdjacentHTML('beforeend', `
+        <label class="flex items-center gap-3 border rounded-xl px-3 py-2">
+          <input id="${id}" type="checkbox" data-opt-type="toggle" data-key="${rule.key}" data-price="${rule.price||0}">
+          <span>${rule.label}${rule.price?`（+${rule.price}）`:''}</span>
+        </label>
+      `);
+    } else if (rule.type === 'choice'){
+      const id = `opt_${rule.key}`;
+      const opts = (rule.options||[]).map(o=>`<option value="${o.value}" data-price="${o.price||0}">${o.label}${o.price?`（+${o.price}）`:''}</option>`).join('');
+      root.insertAdjacentHTML('beforeend', `
+        <div>
+          <label class="text-sm text-slate-600">${rule.label}</label>
+          <select id="${id}" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
+                  data-opt-type="choice" data-key="${rule.key}">
+            ${opts}
+          </select>
+        </div>
+      `);
+    } else if (rule.type === 'enum'){
+      const id = `opt_${rule.key}`;
+      const opts = (rule.options||[]).map(o=>`<option value="${o.value}">${o.label}</option>`).join('');
+      root.insertAdjacentHTML('beforeend', `
+        <div>
+          <label class="text-sm text-slate-600">${rule.label}</label>
+          <select id="${id}" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
+                  data-opt-type="enum" data-key="${rule.key}">
+            ${opts}
+          </select>
+        </div>
+      `);
+    }
+  });
+}
+function readOptionSelections(catKey){
+  const rules = CATEGORY_OPTION_RULES[catKey] || [];
+  let delta = 0;
+  const parts = [];
+
+  rules.forEach(rule=>{
+    if (rule.type === 'toggle'){
+      const input = el(`#opt_${rule.key}`);
+      if (input?.checked){
+        const p = Number(input.dataset.price||0);
+        delta += p;
+        parts.push(rule.label);
+      }
+    } else if (rule.type === 'choice'){
+      const sel = el(`#opt_${rule.key}`);
+      const opt = sel?.selectedOptions?.[0];
+      if (opt){
+        const label = rule.label + '：' + opt.textContent.replace(/（\+\d+）$/, '');
+        const p = Number(opt.dataset.price||0);
+        delta += p;
+        parts.push(label);
+      }
+    } else if (rule.type === 'enum'){
+      const sel = el(`#opt_${rule.key}`);
+      const v = sel?.value || '';
+      const opt = sel?.selectedOptions?.[0];
+      const labelText = opt ? opt.textContent : v;
+      if (labelText) parts.push(`${rule.label}：${labelText}`);
+    }
+  });
+
+  return { optionDelta: delta, optionSummary: parts.join('｜') };
+}
+function calcUnitPrice(item){
+  const { optionDelta } = readOptionSelections(item._catKey);
+  return (item.price || 0) + optionDelta;
+}
+
 /* === Cart === */
-function addToCart(bundle){ state.cart.push({ type:'meal', ...bundle }); renderCart(); }
+function addToCart(bundle){
+  state.cart.push({ type:'meal', ...bundle });
+  renderCart();
+}
 function removeCartEntry(index){ state.cart.splice(index,1); renderCart(); }
 function cartTotal(){
   return state.cart.reduce((sum,e)=>{
     if(e.type==='meal'){
-      return sum + e.item.price*e.qty;
+      return sum + (e.item.price||0)*e.qty;
     }
     return sum;
   }, 0);
@@ -499,14 +679,15 @@ function renderCart(){
   const root=el('#cartItems'); root.innerHTML='';
   if(state.cart.length===0){ root.innerHTML='<div class="text-slate-500">購物車目前沒有商品。</div>'; }
   state.cart.forEach((e, idx)=>{
-    const linePrice = e.item.price*e.qty;
+    const linePrice = (e.item.price||0)*e.qty;
     const staplePart = e.needStaple ? ` ｜ 主食：${e.staple||'-'}` : '';
+    const optPart    = e._optionText ? ` ${e._optionText}` : '';
     const div=document.createElement('div');
     div.className='card bg-white p-4';
     div.innerHTML=`
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-          <div class="font-medium">${e.item.name}${staplePart}</div>
+          <div class="font-medium">${e.item.name}${staplePart}${optPart}</div>
           <div class="text-sm text-slate-700 mt-1">備註：${e.remark ? e.remark : '(無)'}</div>
           <div class="text-sm text-slate-600 mt-1">
             數量 ×
@@ -603,44 +784,36 @@ async function isSoldOut(name){
 }
 async function checkSoldOutByName(name){ return isSoldOut(name); }
 
-/* 把售完狀態套用到「選擇」按鈕（不改你原本事件，只是 disabled + 徽章） */
-
-
+/* 把售完狀態套用到「選擇」按鈕（不改事件；顯示不可點徽章） */
 async function enforceSoldOutOnMenu(force = false) {
   try {
-    const { byName, bySku } = await fetchMenuStatus(force);
+    const { byName } = await fetchMenuStatus(force);
 
     document.querySelectorAll('.choose-btn').forEach(btn => {
       const name = btn.dataset.name || '';
-      const sku  = btn.dataset.sku  || '';
-      const sold = sku ? !!bySku.get(sku) : !!byName.get(name);
+      const sold = !!byName.get(name);
 
-      const wrap = btn.parentElement; // <div class="mt-4 flex justify-end">...</div>
+      const wrap = btn.parentElement;
       if (!wrap) return;
 
       let soldPill = wrap.querySelector('.sold-pill');
 
       if (sold) {
-        // 隱藏原本「選擇」按鈕
         btn.classList.add('hidden');
-
-        // 若還沒有售完膠囊，建立一顆外觀與按鈕相近的「不可點」徽章
         if (!soldPill) {
           soldPill = document.createElement('span');
           soldPill.className = [
-            'sold-pill',              // 供查找/移除
+            'sold-pill',
             'inline-flex items-center justify-center',
-            'px-4 py-2',
-            'rounded-xl',
+            'px-4 py-2','rounded-xl',
             'border border-slate-300',
             'bg-slate-100 text-slate-500',
             'cursor-not-allowed select-none'
           ].join(' ');
           soldPill.textContent = '售完';
-          wrap.insertBefore(soldPill, btn); // 放在「選擇」左邊
+          wrap.insertBefore(soldPill, btn);
         }
       } else {
-        // 可販售：顯示「選擇」，移除售完膠囊
         btn.classList.remove('hidden');
         if (soldPill) soldPill.remove();
       }
@@ -649,8 +822,6 @@ async function enforceSoldOutOnMenu(force = false) {
     console.warn('套用售完狀態失敗：', err);
   }
 }
-
-
 
 /* === Apps Script API：reserve + confirm + sync === */
 async function apiReserve(orderId, pickupAtHintISO, diningType, tableNo){
@@ -717,10 +888,12 @@ async function onSubmitOrder(e) {
       return;
     }
 
+    // 轉為後端格式（把選項與主食寫進 name）
     const items = state.cart.map(e => {
       const staplePart = e.needStaple ? `｜主食：${e.staple || '-'}` : '';
+      const optsPart   = e._optionText ? `｜${e._optionText}` : '';
       const remarkPart = e.remark ? `｜備註：${e.remark}` : '';
-      const nameWith = `${e.item.name}${staplePart}${remarkPart}`;
+      const nameWith = `${e.item.name}${staplePart}${optsPart}${remarkPart}`;
       return { id: e.item.id, name: nameWith, price: e.item.price, qty: e.qty };
     });
     const subtotal = items.reduce((s, it) => s + it.price * it.qty, 0);
@@ -737,11 +910,11 @@ async function onSubmitOrder(e) {
       desiredPickupTime: (diningType === 'takeout' ? (pickupAtHintISO || null) : null)
     };
 
-    // A) reserve：外帶用顧客自選時段；內用不寫時間
+    // A) reserve
     const res = await apiReserve(orderId, pickupAtHintISO, diningType, tableNo);
     if (!res.ok) { showErr(mapApiError(res.error, res.message)); return; }
 
-    // 成功畫面（共用一個 Modal，條件顯示）
+    // 成功畫面
     el('#pickupNoText').textContent = String(res.pickupNo ?? '');
     if (diningType === 'takeout') {
       el('#successTakeoutTime').classList.remove('hidden');
@@ -754,7 +927,7 @@ async function onSubmitOrder(e) {
     }
     el('#successModal').classList.remove('hidden');
 
-    // B) 背景 confirm → 成功後再 sync
+    // B) confirm → sync
     (async () => {
       try {
         const c = await apiConfirm(order);
@@ -789,25 +962,22 @@ function initSlots(){
 
 document.addEventListener('DOMContentLoaded',()=>{
   el('#year').textContent=new Date().getFullYear();
-  // 頁面載入就預先建立彈窗（避免第一次動態建 DOM 的延遲）
   ensureItemModal();
-  
-  // 頁面載入就先把售完狀態拉回來快取（避免第一次點時才打 API）
+
+  // 先把售完狀態拉回來
   fetchMenuStatus(true).catch(()=>{});
 
+  // Render 八大類（帶上分類 key）
+  renderCategory(MENU.setmeal, '#setmealList', 'setmeal');
+  renderCategory(MENU.burger,  '#burgerList',  'burger');
+  renderCategory(MENU.toast,   '#toastList',   'toast');
+  renderCategory(MENU.omelet,  '#omeletList',  'omelet');
+  renderCategory(MENU.club,    '#clubList',    'club');
+  renderCategory(MENU.special, '#specialList', 'special');
+  renderCategory(MENU.custom,  '#customList',  'custom');
+  renderCategory(MENU.drinks,  '#drinksList',  'drinks');
 
-  renderCategory(MENU.setmeal, '#setmealList');
-  renderCategory(MENU.burger,  '#burgerList');
-  renderCategory(MENU.toast,   '#toastList');
-  renderCategory(MENU.omelet,  '#omeletList');
-  renderCategory(MENU.club,    '#clubList');
-  renderCategory(MENU.special, '#specialList');
-  renderCategory(MENU.custom,  '#customList');
-  renderCategory(MENU.drinks,  '#drinksList');
-
-  
-
-  // 初始套用一次售完狀態，之後每 30 秒刷新一次
+  // 售完狀態
   (async ()=>{ await enforceSoldOutOnMenu(true); setInterval(()=> enforceSoldOutOnMenu(false), SOLDOUT_TTL_MS); })();
 
   ensureCategoryAnchors();
@@ -829,10 +999,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   onDiningTypeChange();
 
-  // 每分鐘刷新可選時段（避免長時間停留頁面造成時段過舊）
+  // 每分鐘刷新可選時段
   setInterval(initSlots, 60*1000);
 });
-
 
 /* ===== 分類快速選擇：錨點、捲動、著色、選中狀態 ===== */
 const CATEGORY_SECTIONS = [
@@ -846,46 +1015,28 @@ const CATEGORY_SECTIONS = [
   { key:'drinks',  label:'飲料/研磨咖啡', listSel:'#drinksList',  color:'#c9141a' },
 ];
 
-
-/* 幫每個分類標題加錨點（不改你原 HTML 結構） */
-/* 幫每個分類標題加錨點（符合你現在的 .cat-wrap / .cat-header 結構） */
 function ensureCategoryAnchors(){
   CATEGORY_SECTIONS.forEach(({ key, listSel })=>{
     const list = document.querySelector(listSel);
     if (!list) return;
-
-    // 你的結構：list 前面是 .cat-header，真正的 <h2> 在裡面
     const headerDiv = list.previousElementSibling;
     const h2 = headerDiv?.querySelector('h2');
-
-    // 優先把錨點放在 <h2>，沒有再退而求其次放在整個 cat-wrap 或 list 本身
-    const anchorEl =
-      h2 ||
-      list.closest('.cat-wrap') ||
-      list;
-
+    const anchorEl = h2 || list.closest('.cat-wrap') || list;
     if (!anchorEl.id) anchorEl.id = `sec-${key}`;
     anchorEl.classList.add('section-anchor');
   });
 }
-
-
-/* 計算頂端固定區塊高度（header + 分類列）作為捲動補償 */
 function getScrollOffsetPx(){
   const header = document.querySelector('header');
   const bar    = document.querySelector('#categoryBar');
   return (header?.offsetHeight || 0) + (bar?.offsetHeight || 0) + 8;
 }
-
-/* 平滑捲動到指定分類（用絕對座標，避免部分瀏覽器對 scrollIntoView 的 sticky 偏移問題） */
 function scrollToCategory(key){
   const sec = document.getElementById(`sec-${key}`);
   if (!sec) return;
   const top = sec.getBoundingClientRect().top + window.pageYOffset - getScrollOffsetPx();
   window.scrollTo({ top, behavior:'smooth' });
 }
-
-/* 設定分類按鈕著色（字色依類別；選中時反白） */
 function paintCategoryButtons(){
   const btns = document.querySelectorAll('#categoryBar .catbtn');
   btns.forEach(btn=>{
@@ -893,30 +1044,21 @@ function paintCategoryButtons(){
     if (conf) btn.style.color = conf.color;
   });
 }
-
-/* 點擊綁定 */
 function bindCategoryClicks(){
   document.querySelectorAll('#categoryBar .catbtn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const key = btn.dataset.cat;
       scrollToCategory(key);
-      // 立即高亮（之後還會被觀察者覆蓋成正確狀態）
       document.querySelectorAll('#categoryBar .catbtn').forEach(b=>b.classList.remove('is-active'));
       btn.classList.add('is-active');
     });
   });
 }
-
-/* 監看捲動，自動高亮當前分類 */
 function observeActiveCategory(){
   const buttons = Array.from(document.querySelectorAll('#categoryBar .catbtn'));
   const mapBtn  = Object.fromEntries(buttons.map(b => [b.dataset.cat, b]));
-
   const io = new IntersectionObserver(entries=>{
-    // 找到目前「最靠近頂部」且可見的錨點
-    const visible = entries
-      .filter(e => e.isIntersecting)
-      .sort((a,b)=> a.boundingClientRect.top - b.boundingClientRect.top);
+    const visible = entries.filter(e => e.isIntersecting).sort((a,b)=> a.boundingClientRect.top - b.boundingClientRect.top);
     if (!visible.length) return;
     const key = (visible[0].target.id || '').replace(/^sec-/,'');
     if (mapBtn[key]) {
@@ -924,22 +1066,17 @@ function observeActiveCategory(){
       mapBtn[key].classList.add('is-active');
     }
   }, { root:null, rootMargin:`-${getScrollOffsetPx()+10}px 0px -60% 0px`, threshold:0 });
-
   CATEGORY_SECTIONS.forEach(({ key })=>{
     const anchor = document.getElementById(`sec-${key}`);
     if (anchor) io.observe(anchor);
   });
 }
-
-/* 讓分類列永遠貼在 header 下方（動態量 header 高度） */
 function stickCategoryBar(){
   const header = document.querySelector('header');
   const bar = document.getElementById('categoryBar');
   if (!header || !bar) return;
   bar.style.top = (header.offsetHeight || 0) + 'px';
 }
-
-// 第一次載入、視窗尺寸改變、header 高度變動時都重算
 window.addEventListener('load', stickCategoryBar);
 window.addEventListener('resize', stickCategoryBar);
 {
@@ -949,8 +1086,7 @@ window.addEventListener('resize', stickCategoryBar);
     ro.observe(header);
   }
 }
-
-
 </script>
+
 </body>
 </html>
