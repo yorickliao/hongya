@@ -512,19 +512,18 @@ const MENU = {
     { id:"drink_rice_milk",       name:"米漿",           price:20 },
     { id:"drink_orange_juice",    name:"柳橙汁",         price:30 }, // only 冰
     { id:"drink_cranberry_juice", name:"蔓越莓汁",       price:30 }, // only 冰
-    { id:"drink_fresh_milk_tea",  name:"鮮奶茶（L/XL）",  price:35 },
-    { id:"drink_barley_milk_milk",name:"薏仁牛奶（L/XL）",price:35 },
-    { id:"drink_soy_milk_tea",    name:"豆奶茶（L/XL）",  price:30 },
-    { id:"drink_cocoa_milk",      name:"可可亞牛奶（L/XL）",price:35 },
-    { id:"drink_thai_milk_tea",   name:"泰式奶茶（L/XL）",price:35 },
-    { id:"drink_cold_brew_tea",   name:"冷泡茶（L/XL）",  price:25 }, // only 冰
+    { id:"drink_fresh_milk_tea",  name:"鮮奶茶",  price:35 },
+    { id:"drink_barley_milk_milk",name:"薏仁牛奶,  price:30 },
+    { id:"drink_cocoa_milk",      name:"可可亞牛奶",price:35 },
+    { id:"drink_thai_milk_tea",   name:"泰式奶茶",price:35 },
+    { id:"drink_cold_brew_tea",   name:"冷泡茶",  price:25 }, // only 冰
   ],
 
   /* 研磨咖啡：依 PDF 價（不套 +5/+10；彈窗用固定 M/L 價） */
   coffee: [
-    { id:"coffee_americano", name:"美式咖啡",   price:40 },
-    { id:"coffee_latte",     name:"拿鐵咖啡",   price:40 },
-    { id:"coffee_special",   name:"特調咖啡",   price:35 },
+    { id:"coffee_americano", name:"美式咖啡",   price:35 },
+    { id:"coffee_latte",     name:"拿鐵咖啡",   price:50 },
+    { id:"coffee_special",   name:"特調咖啡",   price:40 },
     { id:"coffee_yuanyang",  name:"鴛鴦奶茶",   price:40 },
   ],
 };
@@ -1321,8 +1320,8 @@ const CATEGORY_SECTIONS = [
   { key:'special', label:'店長推薦',   listSel:'#specialList', color:'#c9141a' },
   { key:'custom',  label:'帕瑪森/捲餅/香頌/燒餅', listSel:'#customList',  color:'#242d47' },
   { key:'snacks',  label:'美味小點',   listSel:'#snacksList',  color:'#c9141a' },
-  { key:'coffee',  label:'研磨咖啡',   listSel:'#coffeeList',  color:'#242d47' },
-  { key:'drinks',  label:'飲料',       listSel:'#drinksList',  color:'#c9141a' },
+  { key:'coffee',  label:'研磨咖啡',   listSel:'#coffeeList',  color:'#c9141a' },
+  { key:'drinks',  label:'飲料',       listSel:'#drinksList',  color:'#242d47' },
 ];
 
 function ensureCategoryAnchors(){
