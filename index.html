@@ -872,9 +872,10 @@ function buildCoffeeControls(item){
 
 /* === 套餐：上方確認套餐、下方選「套餐飲品」+ 杯型/冰熱 + 加價 === */
 function buildSetmealControls(item){
-  const root = el('#pmOptions'); root.innerHTML = '';
+  const root = el('#pmOptions'); 
+  root.innerHTML = '';
 
-  // 1) 套餐確認（展示用）
+  // 1) 套餐確認
   root.insertAdjacentHTML('beforeend', `
     <div class="border rounded-xl">
       <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">套餐</div>
@@ -885,7 +886,24 @@ function buildSetmealControls(item){
     </div>
   `);
 
-  // 2) 套餐飲品（先選品項，再出現杯型/冰熱；價差寫在 label）
+  // 2) ★ 套餐附加選項（醬汁/口味）—先放在前面
+  const extra = SETMEAL_EXTRA_RULES[item.id];
+  if (extra) {
+    const optHtml = extra.options.map(v => `<option value="${v}">${v}</option>`).join('');
+    root.insertAdjacentHTML('beforeend', `
+      <div id="blk_set_extra" class="border rounded-xl mt-4">
+        <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">${extra.label}</div>
+        <div class="p-3">
+          <select id="opt_set_extra" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
+                  data-extra-key="${extra.key}" data-extra-label="${extra.label}">
+            ${optHtml}
+          </select>
+        </div>
+      </div>
+    `);
+  }
+
+  // 3) 套餐飲品（在「口味/醬汁」之後）
   const drinkRows = SETMEAL_DRINKS.map(d=>{
     const addTxt = d.add ? `+${d.add}` : '';
     return `
@@ -898,14 +916,14 @@ function buildSetmealControls(item){
   }).join('');
 
   root.insertAdjacentHTML('beforeend', `
-    <div class="border rounded-xl mt-4">
+    <div id="blk_set_drinks" class="border rounded-xl mt-4">
       <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">套餐飲品</div>
       <div id="set_drink_list" class="divide-y">${drinkRows}</div>
       <div id="set_drink_opts" class="p-3 hidden"></div>
     </div>
   `);
 
-  // 行為：選了飲品才顯示杯型/冰熱（沿用 buildDrinkControls 規則）
+  // 4) 行為：選到飲品才顯示杯型/冰熱（並保持「口味/醬汁」在前方）
   const list = root.querySelector('#set_drink_list');
   const opts = root.querySelector('#set_drink_opts');
   list.addEventListener('change', ()=>{
@@ -913,30 +931,20 @@ function buildSetmealControls(item){
     if (!id) { opts.classList.add('hidden'); opts.innerHTML=''; return; }
     const tmpItem = { id, _catKey:'drinks' };
     const metaExtra = SETMEAL_DRINKS.find(x=>x.id===id)?.meta;
-    if (metaExtra) DRINKS_META[id] = metaExtra; // 如需覆寫飲料 meta
+    if (metaExtra) DRINKS_META[id] = metaExtra;
     buildDrinkControls(tmpItem, '#set_drink_opts');
     opts.classList.remove('hidden');
-    // 讓小計立刻重算（openItemModal 裡對 #pmOptions 有委派 onchange）
     document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
-  }); // ← 這一行是你原本缺少的 "});"
 
-  // 3) ★ 套餐附加選項（依特定套餐顯示：醬汁/口味；不加價，只記錄）
-  const extra = SETMEAL_EXTRA_RULES[item.id];
-  if (extra) {
-    const optHtml = extra.options.map(v => `<option value="${v}">${v}</option>`).join('');
-    root.insertAdjacentHTML('beforeend', `
-      <div class="border rounded-xl mt-4">
-        <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">${extra.label}</div>
-        <div class="p-3">
-          <select id="opt_set_extra" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
-                  data-extra-key="${extra.key}" data-extra-label="${extra.label}">
-            ${optHtml}
-          </select>
-        </div>
-      </div>
-    `);
-  }
+    // 保序：確保「口味/醬汁」在「套餐飲品」之前
+    const extraBlk = root.querySelector('#blk_set_extra');
+    const drinkBlk = root.querySelector('#blk_set_drinks');
+    if (extraBlk && drinkBlk && extraBlk.nextElementSibling !== drinkBlk) {
+      root.insertBefore(extraBlk, drinkBlk);
+    }
+  });
 }
+
 
 
 /* === 讀取各類型的選擇 & 計價 === */
