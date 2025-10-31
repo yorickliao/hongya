@@ -341,25 +341,14 @@ async function loadOrders(){
 }
 
 function applyFilters(){
-  const chosenDate = document.querySelector('#datePicker').value || '';
-  // 當日
-  let rowsToday = ORDERS_ALL.filter(o => {
-    const createdAt = new Date(o.createdAt);
-    const norm = createdAt.toISOString().split('T')[0];
-    return norm === chosenDate;
-  });
-  // 主畫面只顯示未完成
-  ORDERS = rowsToday.filter(o => !isDoneVal(o.done));
+  // 伺服器端已依 date 參數過濾，這裡只保留「未完成」
+  ORDERS = (ORDERS_ALL || []).filter(o => !isDoneVal(o.done));
 }
 
 /* 當日完成清單與數量 */
 function getCompletedToday(){
-  const chosenDate = document.querySelector('#datePicker').value || '';
-  return ORDERS_ALL.filter(o => {
-    const createdAt = new Date(o.createdAt);
-    const norm = createdAt.toISOString().split('T')[0];
-    return norm === chosenDate && isDoneVal(o.done);
-  });
+  // 同理，伺服器已過濾當日，這裡只取「已完成」
+  return (ORDERS_ALL || []).filter(o => isDoneVal(o.done));
 }
 
 function updateCompletedCountBadge(){
