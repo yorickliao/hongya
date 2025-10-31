@@ -567,6 +567,26 @@ const SETMEAL_DRINKS = [
   { id:'drink_cold_brew_tea',    label:'冷泡茶',      add:10 },  // 只供冰
 ];
 
+/* ★ 套餐「進去可以選」的附加選項（不加價，只做紀錄） */
+const SETMEAL_EXTRA_RULES = {
+  set_lemon_chicken_noodle: {                 // 檸檬雞柳麵套餐
+    key: 'sauce', label: '醬汁',
+    options: [ '紅醬', '青醬', '白醬' ]
+  },
+  set_stirfry_pork_noodle: {                  // 蔥爆燒肉炒麵套餐
+    key: 'style', label: '口味',
+    options: [ '沙茶', '蔥燒' ]
+  },
+  set_loin_iron_noodle: {                     // 里肌鐵板麵套餐
+    key: 'sauce', label: '醬汁',
+    options: [ '黑胡椒', '蘑菇' ]
+  },
+  set_fried_chicken: {                        // 美式脆雞堡套餐
+    key: 'flavor', label: '口味',
+    options: [ '原味', '辣味' ]
+  }
+};
+
 /* === Render：分類卡片（帶入分類 key，讓彈窗知道走哪組規則） === */
 function renderCategory(list, targetId, catKey){
   const root = el(targetId); if (!root) return;
@@ -899,8 +919,23 @@ function buildSetmealControls(item){
     opts.classList.remove('hidden');
     // 讓小計立刻重算（openItemModal 裡對 #pmOptions 做了委派 onchange）
     document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
-
-  });
+    
+  // 3) ★ 套餐附加選項（依特定套餐顯示：醬汁/口味）
+  const extra = SETMEAL_EXTRA_RULES[item.id];
+  if (extra) {
+    const optHtml = extra.options.map(v => `<option value="${v}">${v}</option>`).join('');
+    root.insertAdjacentHTML('beforeend', `
+      <div class="border rounded-xl mt-4">
+        <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">${extra.label}</div>
+        <div class="p-3">
+          <select id="opt_set_extra" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
+                  data-extra-key="${extra.key}" data-extra-label="${extra.label}">
+            ${optHtml}
+          </select>
+        </div>
+      </div>
+    `);
+  }
 }
 
 /* === 讀取各類型的選擇 & 計價 === */
@@ -910,27 +945,39 @@ function readSelectionsFor(item){
     const chosen = el('input[name="opt_set_drink"]:checked');
     let parts = [];
     let delta = 0;
+  
+    // 飲品 + 杯型/冰熱
     if (chosen){
       const drinkId = chosen.value;
       const add = Number(chosen.dataset.add||0);
       delta += add;
       const label = SETMEAL_DRINKS.find(d=>d.id===drinkId)?.label || '';
-
+  
       const sizeSel = el('#opt_drink_size');
       const tempSel = el('#opt_drink_temp');
-      let szTxt='', szAdd=0, tempTxt='';
+      let szTxt='', tempTxt='';
       if (sizeSel){
         const opt = sizeSel.selectedOptions[0];
-        szAdd = Number(opt.dataset.extra||0);
+        const szAdd = Number(opt.dataset.extra||0);
         delta += szAdd;
         szTxt = opt.textContent.replace(/（\+\d+）/,'');
       }
       if (tempSel) tempTxt = (tempSel.value==='ice'?'冰':'熱');
-
+  
       parts.push(`套餐飲品：${label}${szTxt?`｜${szTxt}`:''}${tempTxt?`｜${tempTxt}`:''}`);
     }
+  
+    // ★ 套餐附加選項（醬汁/口味；不加價，只記錄）
+    const extraSel = el('#opt_set_extra');
+    if (extraSel){
+      const extraLabel = extraSel.dataset.extraLabel || '選項';
+      const extraValue = extraSel.value || '';
+      if (extraValue) parts.push(`${extraLabel}：${extraValue}`);
+    }
+  
     return { optionDelta: delta, optionSummary: parts.join('｜') };
   }
+
 
   // 飲料
   if (item._catKey === 'drinks'){
