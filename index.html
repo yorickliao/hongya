@@ -313,34 +313,24 @@ function mapApiError(errCode, serverMessage){
 /* === 參數：營業時間 === */
 const BUSINESS = { startHour:16, endHour:20, intervalMin:15 };
 
-/* === 主食選項（若某品需要） === */
+/* === 主食選項（若某品需要；早餐目前不會用到） === */
 const HOTPOT_STAPLES = ["意麵","雞絲","冬粉","泡麵","飯"];
 
-/* === 分類選項規則（會自動生成 UI 與加價）===
-  類型：
-   - toggle: 勾選加價；fields: key, label, price
-   - choice: 單選（Select）；fields: key, label, options:[{label, price, value}]
-   - enum:   單選（Select，無加價）；fields: key, label, options:[{label, value}]
-*/
+/* === 分類規則（一般類：漢堡/吐司/蛋餅/總匯/客製） === */
 const CATEGORY_OPTION_RULES = {
-  // 套餐、店長推薦：只有備註與數量（留空）
-  setmeal: [],
+  setmeal: [],   // 套餐：走專屬 UI（見 buildSetmealControls）
   special: [],
-
-  // 「美味小點」若未來要加：key 建議設為 snacks
   snacks: [],
 
-  // 漢堡：加蛋+15、加起司+10、麵包換圓形帕瑪森+10
   burger: [
-    { type:'toggle', key:'egg',   label:'加蛋',   price:15 },
-    { type:'toggle', key:'cheese',label:'加起司', price:10 },
-    { type:'choice', key:'bread', label:'麵包',   options:[
+    { type:'toggle', key:'egg',    label:'加蛋',   price:15 },
+    { type:'toggle', key:'cheese', label:'加起司', price:10 },
+    { type:'choice', key:'bread',  label:'麵包',   options:[
       { label:'方形漢堡（預設）', value:'方形漢堡', price:0 },
       { label:'圓形帕瑪森',       value:'圓形帕瑪森', price:10 },
     ]},
   ],
 
-  // 烤土司：加起司+15、換鬆餅+15
   toast: [
     { type:'toggle', key:'cheese', label:'加起司', price:15 },
     { type:'choice', key:'base',   label:'主體',   options:[
@@ -349,17 +339,14 @@ const CATEGORY_OPTION_RULES = {
     ]},
   ],
 
-  // 蛋餅：加起司+10
   omelet: [
     { type:'toggle', key:'cheese', label:'加起司', price:10 },
   ],
 
-  // 總匯：加起司+10
   club: [
     { type:'toggle', key:'cheese', label:'加起司', price:10 },
   ],
 
-  // 愛吃自己配：麵包體（帕瑪森/捲餅/香頌/燒餅），加蛋+15，加起司+10
   custom: [
     { type:'choice', key:'bread', label:'麵包體', options:[
       { label:'帕瑪森', value:'帕瑪森', price:0 },
@@ -371,211 +358,188 @@ const CATEGORY_OPTION_RULES = {
     { type:'toggle', key:'cheese', label:'加起司', price:10 },
   ],
 
-  // 飲料/研磨咖啡：尺寸（中0/大+5/特大+10）、溫度（冰/熱，無加價）
-  drinks: [
-    { type:'choice', key:'size', label:'尺寸', options:[
-      { label:'中杯',  value:'中',  price:0 },
-      { label:'大杯',  value:'大',  price:5 },
-      { label:'特大杯',value:'特大',price:10 },
-    ]},
-    { type:'enum', key:'temp', label:'溫度', options:[
-      { label:'冰', value:'冰' },
-      { label:'熱', value:'熱' },
-    ]},
-  ],
+  // drinks / coffee 都走專屬 UI（見 buildDrinkControls / buildCoffeeControls）
+  drinks: [],
+  coffee: []
 };
 
-/* === 菜單（範例；等你晚點補正式品項即可）=== */
-/* === 菜單（依 PDF 實際價格）=== */
+/* === 菜單（依 PDF；果醬吐司改成單一品項 toast_jam） === */
 const MENU = {
-  /* 套餐系列（均附小杯紅茶） */
+  /* 套餐系列（示意：左側 16 套餐；你之後要調整名稱/價錢直接改這裡） */
   setmeal: [
-    { id:"set_american_pork", name:"美式大豬堡套餐", price:120 },
-    { id:"set_chicken_tender", name:"起飛嫩雞堡套餐", price:120 },
-    { id:"set_double_pork_cheese", name:"雙層豬肉起司堡套餐", price:105 },
-    { id:"set_french_mash_salad", name:"法式薯泥沙拉套餐", price:105 },
-    { id:"set_euro_mash_salad", name:"歐式薯泥沙拉套餐", price:105 },
-    { id:"set_german_parmesan", name:"德式帕瑪森套餐", price:140 },
-    { id:"set_fried_chicken", name:"美式脆雞堡套餐", price:130 },
-    { id:"set_stirfry_pork_noodle", name:"蔥爆燒肉炒麵套餐", price:95 },
-    { id:"set_loin_iron_noodle", name:"里肌鐵板麵套餐", price:110 },
-    { id:"set_green_curry", name:"沙嗲咖哩麵套餐", price:95 },
-    { id:"set_pork_satay", name:"香蔥吉拿套餐", price:90 },
-    { id:"set_lemon_chicken_noodle", name:"檸檬雞柳麵套餐", price:100 },
-    { id:"set_signature_club", name:"招牌總匯套餐", price:125 },
-    { id:"set_kids_meal", name:"歡樂兒童餐", price:90 },
-    { id:"set_waffle", name:"華夫鬆餅套餐", price:130 },
-    { id:"set_fried_fish_noodle", name:"酥炸魚柳麵套餐", price:120 },
+    { id:"set_american_pork",          name:"美式大豬堡套餐",   price:120 },
+    { id:"set_chicken_tender",         name:"起飛嫩雞堡套餐",   price:120 },
+    { id:"set_double_pork_cheese",     name:"雙層豬肉起司堡套餐", price:105 },
+    { id:"set_french_mash_salad",      name:"法式薯泥沙拉套餐", price:105 },
+    { id:"set_euro_mash_salad",        name:"歐式薯泥沙拉套餐", price:105 },
+    { id:"set_german_parmesan",        name:"德式帕瑪森套餐",   price:140 },
+    { id:"set_fried_chicken",          name:"美式脆雞堡套餐",   price:130 },
+    { id:"set_stirfry_pork_noodle",    name:"蔥爆燒肉炒麵套餐", price:95  },
+    { id:"set_loin_iron_noodle",       name:"里肌鐵板麵套餐",   price:110 },
+    { id:"set_green_curry",            name:"沙嗲咖哩麵套餐",   price:95  },
+    { id:"set_lemon_chicken_noodle",   name:"檸檬雞柳麵套餐",   price:100 },
+    { id:"set_signature_club",         name:"招牌總匯套餐",     price:125 },
+    { id:"set_kids_meal",              name:"歡樂兒童餐",       price:90  },
+    { id:"set_waffle",                 name:"華夫鬆餅套餐",     price:130 },
+    { id:"set_fried_fish_noodle",      name:"酥炸魚柳麵套餐",   price:120 },
+    { id:"set_sample_last",            name:"（保留一筆）",     price:110 },
   ],
 
-  /* 漢堡系列（原/辣分開） */
   burger: [
-    { id:"burg_american_pork", name:"美式大豬堡（原）", price:85 },
-    { id:"burg_american_pork_spicy", name:"美式大豬堡（辣）", price:85 },
-    { id:"burg_fillet_chicken_egg", name:"菲力雞排蛋堡（原）", price:80 },
-    { id:"burg_fillet_chicken_egg_spicy", name:"菲力雞排蛋堡（辣）", price:80 },
-    { id:"burg_spicy_chicken_egg", name:"卡拉雞腿蛋堡（原）", price:80 },
-    { id:"burg_spicy_chicken_egg_spicy", name:"卡拉雞腿蛋堡（辣）", price:80 },
-    { id:"burg_fish_egg", name:"酥炸魚柳蛋堡", price:80 },
-    { id:"burg_pepper_chicken_egg", name:"椒麻雞排蛋堡", price:80 },
-    { id:"burg_shrimp_egg", name:"金蝦蛋堡", price:75 },
-    { id:"burg_cheese_chicken_egg", name:"起司雞排蛋堡", price:75 },
-    { id:"burg_beef_egg", name:"牛肉蛋堡", price:75 },
-    { id:"burg_sauce_chicken_egg", name:"醬燒雞腿蛋堡", price:65 },
-    { id:"burg_pork_egg", name:"豬柳蛋堡", price:60 },
-    { id:"burg_loin_egg", name:"里肌蛋堡", price:60 },
-    { id:"burg_hash_egg", name:"薯餅蛋堡", price:60 },
-    { id:"burg_smoked_chicken_egg", name:"燻雞蛋堡", price:55 },
-    { id:"burg_wheat_chicken_egg", name:"麥香雞蛋堡", price:50 },
-    { id:"burg_tuna_egg", name:"鮪魚蛋堡", price:50 },
-    { id:"burg_pork", name:"豬肉蛋堡", price:50 },
-    { id:"burg_veggie_egg", name:"蔬菜蛋堡", price:45 },
-    { id:"burg_plain_egg", name:"蛋堡", price:35 },
+    { id:"burg_american_pork",              name:"美式大豬堡（原）", price:85 },
+    { id:"burg_american_pork_spicy",        name:"美式大豬堡（辣）", price:85 },
+    { id:"burg_fillet_chicken_egg",         name:"菲力雞排蛋堡（原）", price:80 },
+    { id:"burg_fillet_chicken_egg_spicy",   name:"菲力雞排蛋堡（辣）", price:80 },
+    { id:"burg_spicy_chicken_egg",          name:"卡拉雞腿蛋堡（原）",  price:80 },
+    { id:"burg_spicy_chicken_egg_spicy",    name:"卡拉雞腿蛋堡（辣）",  price:80 },
+    { id:"burg_fish_egg",                   name:"酥炸魚柳蛋堡",       price:80 },
+    { id:"burg_pepper_chicken_egg",         name:"椒麻雞排蛋堡",       price:80 },
+    { id:"burg_shrimp_egg",                 name:"金蝦蛋堡",           price:75 },
+    { id:"burg_cheese_chicken_egg",         name:"起司雞排蛋堡",       price:75 },
+    { id:"burg_beef_egg",                   name:"牛肉蛋堡",           price:75 },
+    { id:"burg_sauce_chicken_egg",          name:"醬燒雞腿蛋堡",       price:65 },
+    { id:"burg_pork_egg",                   name:"豬柳蛋堡",           price:60 },
+    { id:"burg_loin_egg",                   name:"里肌蛋堡",           price:60 },
+    { id:"burg_hash_egg",                   name:"薯餅蛋堡",           price:60 },
+    { id:"burg_smoked_chicken_egg",         name:"燻雞蛋堡",           price:55 },
+    { id:"burg_wheat_chicken_egg",          name:"麥香雞蛋堡",         price:50 },
+    { id:"burg_tuna_egg",                   name:"鮪魚蛋堡",           price:50 },
+    { id:"burg_pork",                       name:"豬肉蛋堡",           price:50 },
+    { id:"burg_veggie_egg",                 name:"蔬菜蛋堡",           price:45 },
+    { id:"burg_plain_egg",                  name:"蛋堡",               price:35 },
   ],
 
-  /* 烤吐司系列（含厚片與焗烤） */
   toast: [
-    { id:"toast_fried_pork", name:"炸豬排三明治", price:95 },
-    { id:"toast_spicy_chicken_egg", name:"卡拉雞腿蛋吐司", price:80 },
-    { id:"toast_beef_egg", name:"牛肉蛋吐司", price:75 },
-    { id:"toast_loin_egg", name:"厚切里肌蛋吐司", price:75 },
-    { id:"toast_shrimp_egg", name:"金蝦蛋吐司", price:75 },
-    { id:"toast_cheese_chicken_egg", name:"起司雞排蛋吐司", price:75 },
-    { id:"toast_spicy_chicken_egg", name:"哈辣雞腿蛋吐司", price:75 },
-    { id:"toast_loin", name:"里肌蛋吐司", price:60 },
-    { id:"toast_pork", name:"豬柳蛋吐司", price:60 },
-    { id:"toast_hash", name:"薯餅蛋吐司", price:60 },
-    { id:"toast_egg_salad", name:"雞蛋沙拉吐司", price:50 },
-    { id:"toast_wheat_chicken_egg", name:"麥香雞蛋吐司", price:50 },
-    { id:"toast_tuna_egg", name:"鮪魚蛋吐司", price:50 },
-    { id:"toast_pork_egg", name:"豬肉蛋吐司", price:50 },
-    { id:"toast_bacon_egg", name:"培根蛋吐司", price:45 },
-    { id:"toast_mash_salad", name:"薯泥沙拉吐司", price:45 },
-    { id:"toast_ham_egg", name:"火腿蛋吐司", price:40 },
-    { id:"toast_cheese_egg", name:"起司蛋吐司", price:35 },
-    { id:"toast_pork_floss_egg", name:"肉鬆蛋吐司", price:35 },
-    { id:"toast_plain_egg", name:"吐司夾蛋", price:30 },
-    { id:"toast_strawberry_jam", name:"果醬吐司（草莓）", price:20 },
-    { id:"toast_choco_jam", name:"果醬吐司（巧克力）", price:20 },
-    { id:"toast_peanut", name:"果醬吐司（花生）", price:20 },
-    { id:"toast_milk", name:"厚片吐司（奶油）", price:30 },
-    { id:"toast_strawberry", name:"厚片吐司（草莓）", price:30 },
-    { id:"toast_choco", name:"厚片吐司（巧克力）", price:30 },
-    { id:"toast_peanut_thick", name:"厚片吐司（花生）", price:30 },
-    { id:"toast_garlic", name:"厚片吐司（香蒜）", price:35 },
-    { id:"toast_matcha", name:"厚片吐司（抹茶）", price:40 },
-    { id:"toast_cocoa", name:"厚片吐司（可可）", price:40 },
-    { id:"toast_bacon_bake", name:"培根焗烤吐司", price:55 },
-    { id:"toast_tuna_bake", name:"鮪魚焗烤吐司", price:55 },
-    { id:"toast_ham_bake", name:"火腿焗烤吐司", price:55 },
+    { id:"toast_fried_pork",     name:"炸豬排三明治",   price:95 },
+    { id:"toast_spicy_chicken",  name:"卡拉雞腿蛋吐司", price:80 },
+    { id:"toast_beef_egg",       name:"牛肉蛋吐司",     price:75 },
+    { id:"toast_loin_egg",       name:"厚切里肌蛋吐司", price:75 },
+    { id:"toast_shrimp_egg",     name:"金蝦蛋吐司",     price:75 },
+    { id:"toast_cheese_chicken", name:"起司雞排蛋吐司", price:75 },
+    { id:"toast_hash",           name:"薯餅蛋吐司",     price:60 },
+    { id:"toast_pork_egg",       name:"豬肉蛋吐司",     price:50 },
+    { id:"toast_bacon_egg",      name:"培根蛋吐司",     price:45 },
+    { id:"toast_mash_salad",     name:"薯泥沙拉吐司",   price:45 },
+    { id:"toast_ham_egg",        name:"火腿蛋吐司",     price:40 },
+    { id:"toast_cheese_egg",     name:"起司蛋吐司",     price:35 },
+    { id:"toast_plain_egg",      name:"吐司夾蛋",       price:30 },
+
+    // ★ 果醬吐司整合：彈窗選口味（草莓/巧克力/花生）
+    { id:"toast_jam",            name:"果醬吐司",       price:20, tag:"jam" },
+
+    // 厚片與焗烤（略）
+    { id:"toast_garlic",         name:"厚片吐司（香蒜）", price:35 },
+    { id:"toast_matcha",         name:"厚片吐司（抹茶）", price:40 },
+    { id:"toast_cocoa",          name:"厚片吐司（可可）", price:40 },
+    { id:"toast_bacon_bake",     name:"培根焗烤吐司",     price:55 },
+    { id:"toast_tuna_bake",      name:"鮪魚焗烤吐司",     price:55 },
+    { id:"toast_ham_bake",       name:"火腿焗烤吐司",     price:55 },
   ],
 
-  /* 蛋餅系列（原味/辣味拆開） */
   omelet: [
-    { id:"omelet_karla", name:"卡拉蛋餅（辣）", price:75 },
-    { id:"omelet_loin", name:"里肌蛋餅", price:55 },
-    { id:"omelet_mash", name:"薯泥蛋餅", price:50 },
-    { id:"omelet_hash", name:"薯餅蛋餅", price:50 },
-    { id:"omelet_pork", name:"豬肉蛋餅", price:45 },
-    { id:"omelet_tuna", name:"鮪魚蛋餅", price:45 },
-    { id:"omelet_bacon", name:"培根蛋餅", price:45 },
-    { id:"omelet_hotdog", name:"熱狗蛋餅", price:40 },
-    { id:"omelet_ham", name:"火腿蛋餅", price:40 },
-    { id:"omelet_corn", name:"玉米蛋餅", price:40 },
-    { id:"omelet_cheese", name:"起司蛋餅", price:35 },
-    { id:"omelet_veggie", name:"鮮蔬蛋餅", price:35 },
-    { id:"omelet_pork_floss", name:"肉鬆蛋餅", price:35 },
-    { id:"omelet_plain", name:"原味蛋餅", price:30 },
+    { id:"omelet_karla",        name:"卡拉蛋餅（辣）", price:75 },
+    { id:"omelet_loin",         name:"里肌蛋餅",       price:55 },
+    { id:"omelet_pork",         name:"豬肉蛋餅",       price:45 },
+    { id:"omelet_tuna",         name:"鮪魚蛋餅",       price:45 },
+    { id:"omelet_bacon",        name:"培根蛋餅",       price:45 },
+    { id:"omelet_ham",          name:"火腿蛋餅",       price:40 },
+    { id:"omelet_corn",         name:"玉米蛋餅",       price:40 },
+    { id:"omelet_cheese",       name:"起司蛋餅",       price:35 },
+    { id:"omelet_plain",        name:"原味蛋餅",       price:30 },
   ],
 
-  /* 總匯系列 */
   club: [
-    { id:"club_chicken_leg", name:"卡拉雞腿總匯", price:95 },
-    { id:"club_tender_chicken", name:"起飛嫩雞總匯", price:95 },
-    { id:"club_shrimp", name:"金蝦總匯", price:85 },
-    { id:"club_sauce_chicken", name:"醬燒雞總匯", price:80 },
-    { id:"club_loin", name:"里肌總匯", price:75 },
-    { id:"club_smoked_chicken", name:"燻雞總匯", price:75 },
-    { id:"club_signature", name:"招牌總匯", price:70 },
-    { id:"club_tuna", name:"鮪魚總匯", price:70 },
+    { id:"club_chicken_leg",    name:"卡拉雞腿總匯",   price:95 },
+    { id:"club_signature",      name:"招牌總匯",       price:70 },
   ],
 
-  /* 店長推薦 */
   special: [
-    { id:"sp_egg_salad", name:"雞蛋沙拉", price:65 },
-    { id:"sp_fries", name:"脆薯", price:40 },
-    { id:"sp_garlic_bread", name:"香蒜麵包", price:35 },
-    { id:"sp_nuggets", name:"雞塊", price:35 },
-    { id:"sp_meat_beans", name:"小肉豆", price:35 },
+    { id:"sp_egg_salad",        name:"雞蛋沙拉",       price:65 },
+    { id:"sp_fries",            name:"脆薯",           price:40 },
   ],
 
-  /* 愛吃自己配（帕瑪森、捲餅、香頌、燒餅） */
   custom: [
-    { id:"custom_parmesan_hchicken", name:"帕瑪森 哈辣雞腿", price:90 },
-    { id:"custom_parmesan_sausage", name:"帕瑪森 德式香腸", price:90 },
-    { id:"custom_parmesan_cheesechicken", name:"帕瑪森 起司雞排", price:85 },
-    { id:"custom_parmesan_italian", name:"帕瑪森 義式雞", price:85 },
-    { id:"custom_parmesan_loin", name:"帕瑪森 嫩煎里肌", price:85 },
-    { id:"custom_parmesan_smokedchicken", name:"帕瑪森 香燻雞排", price:85 },
-    { id:"custom_parmesan_eggsalad", name:"帕瑪森 雞蛋沙拉", price:80 },
-    { id:"custom_parmesan_tuna", name:"帕瑪森 洋蔥鮪魚", price:80 },
-    { id:"custom_parmesan_mash", name:"帕瑪森 薯泥沙拉", price:80 },
-    { id:"custom_parmesan_veggie", name:"帕瑪森 鮮蔬沙拉", price:70 },
+    { id:"custom_parmesan_loin",    name:"帕瑪森 嫩煎里肌", price:85 },
+    { id:"custom_parmesan_tuna",    name:"帕瑪森 洋蔥鮪魚", price:80 },
   ],
 
-  /* 美味小點 */
   snacks: [
-    { id:"snack_noodle_egg_mushroom", name:"鐵板麵加蛋（蘑菇）", price:65 },
-    { id:"snack_noodle_egg_blackpepper", name:"鐵板麵加蛋（黑胡椒）", price:65 },
-    { id:"snack_crispy_chicken", name:"香脆雞", price:45 },
-    { id:"snack_scallion_pancake_egg", name:"蔥抓餅加蛋", price:45 },
-    { id:"snack_hash_egg_tart", name:"薯餅蛋塔", price:45 },
-    { id:"snack_corn_soup", name:"玉米濃湯", price:40 },
-    { id:"snack_lemon_chicken_strip", name:"檸檬雞柳條", price:45 },
-    { id:"snack_churros", name:"香蔥吉拿棒", price:40 },
-    { id:"snack_hashbrown", name:"薯餅", price:40 },
-    { id:"snack_hotdog_scramble", name:"熱狗散蛋", price:40 },
-    { id:"snack_tempura", name:"香酥甜不辣", price:40 },
-    { id:"snack_fish_strip", name:"酥炸魚條", price:45 },
-    { id:"snack_radish_egg", name:"蘿蔔糕散蛋", price:55 },
-    { id:"snack_radish", name:"蘿蔔糕", price:40 },
-    { id:"snack_dumpling", name:"煎餃", price:40 },
-    { id:"snack_fries", name:"薯條", price:30 },
-    { id:"snack_hotdog", name:"熱狗", price:25 },
-    { id:"snack_fried_egg", name:"荷包蛋", price:15 },
+    { id:"snack_fries",         name:"薯條",           price:30 },
+    { id:"snack_hashbrown",     name:"薯餅",           price:40 },
+    { id:"snack_nuggets",       name:"雞塊",           price:35 },
   ],
 
   /* 飲料（中為 base；L +5，XL +10） */
   drinks: [
-    { id:"drink_black_tea", name:"紅茶", price:20 },
-    { id:"drink_soy_milk", name:"豆漿", price:20 },
-    { id:"drink_milk_tea", name:"奶茶", price:20 },
-    { id:"drink_rice_milk", name:"米漿", price:20 },
-    { id:"drink_barley_milk", name:"薏仁漿", price:20 },
-    { id:"drink_orange_juice", name:"柳橙汁（冰）", price:30 },
-    { id:"drink_cranberry_juice", name:"蔓越莓汁（冰）", price:30 },
-    { id:"drink_fresh_milk_tea", name:"鮮奶茶（L,XL）", price:35 },
-    { id:"drink_barley_milk_milk", name:"薏仁牛奶（L,XL）", price:35 },
-    { id:"drink_soy_milk_tea", name:"豆奶茶（L,XL）", price:30 },
-    { id:"drink_cocoa_milk", name:"可可亞牛奶（L,XL）", price:35 },
-    { id:"drink_thai_milk_tea", name:"泰式奶茶（L,XL）", price:35 },
-    { id:"drink_cold_brew_tea", name:"冷泡茶（冰, L,XL）", price:25 },
+    { id:"drink_black_tea",       name:"紅茶",           price:20 },
+    { id:"drink_milk_tea",        name:"奶茶",           price:20 },
+    { id:"drink_soy_milk",        name:"豆漿",           price:20 },
+    { id:"drink_barley_milk",     name:"薏仁漿",         price:20 },
+    { id:"drink_rice_milk",       name:"米漿",           price:20 },
+    { id:"drink_orange_juice",    name:"柳橙汁",         price:30 }, // 只有冰
+    { id:"drink_cranberry_juice", name:"蔓越莓汁",       price:30 }, // 只有冰
+    { id:"drink_fresh_milk_tea",  name:"鮮奶茶（L/XL）",  price:35 },
+    { id:"drink_barley_milk_milk",name:"薏仁牛奶（L/XL）",price:35 },
+    { id:"drink_soy_milk_tea",    name:"豆奶茶（L/XL）",  price:30 },
+    { id:"drink_cocoa_milk",      name:"可可亞牛奶（L/XL）",price:35 },
+    { id:"drink_thai_milk_tea",   name:"泰式奶茶（L/XL）",price:35 },
+    { id:"drink_cold_brew_tea",   name:"冷泡茶（L/XL）",  price:25 }, // 只有冰
   ],
 
-  /* 研磨咖啡類（依 PDF 中/大價） */
+  /* 研磨咖啡（依 PDF；不套 +5/+10，直接在彈窗用固定 M/L 價） */
   coffee: [
-    { id:"coffee_drip", name:"研磨咖啡", price:50 },
-    { id:"coffee_latte", name:"拿鐵咖啡", price:40 },
-    { id:"coffee_special", name:"特調咖啡", price:35 },
-    { id:"coffee_americano", name:"美式咖啡", price:40 },
-    { id:"coffee_yuanyang", name:"鴛鴦奶茶", price:40 },
+    { id:"coffee_drip",      name:"研磨咖啡",   price:50 },
+    { id:"coffee_americano", name:"美式咖啡",   price:40 },
+    { id:"coffee_latte",     name:"拿鐵咖啡",   price:40 },
+    { id:"coffee_special",   name:"特調咖啡",   price:35 },
+    { id:"coffee_yuanyang",  name:"鴛鴦奶茶",   price:40 },
   ],
 };
 
+/* === 飲料規則（杯型/冰熱） ===
+   baseSize: 'M' | 'L'  用來決定 +5/+10 的基準
+   sizes:    允許的杯型（M/L/XL）
+   temps:    允許的溫度（ice/hot）
+*/
+const DRINKS_META = {
+  drink_black_tea:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
+  drink_milk_tea:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
+  drink_soy_milk:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
+  drink_barley_milk:      { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
+  drink_rice_milk:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
+  drink_orange_juice:     { baseSize:'M', sizes:['M','L','XL'], temps:['ice']      }, // 只有冰
+  drink_cranberry_juice:  { baseSize:'M', sizes:['M','L','XL'], temps:['ice']      }, // 只有冰
+  drink_fresh_milk_tea:   { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] },
+  drink_barley_milk_milk: { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] },
+  drink_soy_milk_tea:     { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] },
+  drink_cocoa_milk:       { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] },
+  drink_thai_milk_tea:    { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] },
+  drink_cold_brew_tea:    { baseSize:'L', sizes:['L','XL'],     temps:['ice']      }, // 只有冰
+};
+
+/* === 套餐可選飲品（第一版；你要調整價差直接改這裡） ===
+   add: 加價（以套餐含小紅茶為基準）
+   限制杯型/冰熱仍沿用 DRINKS_META（若沒列就用一般規則）
+*/
+const SETMEAL_DRINKS = [
+  { id:'drink_black_tea',        label:'紅茶',        add:0  },
+  { id:'drink_unsweet_green',    label:'無糖綠茶',    add:0,  meta:{ baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] } },
+  { id:'drink_milk_tea',         label:'奶茶',        add:5  },
+  { id:'drink_soy_milk',         label:'豆漿',        add:5  },
+  { id:'drink_barley_milk',      label:'薏仁漿',      add:5  },
+  { id:'drink_orange_juice',     label:'柳橙汁',      add:0  },
+  { id:'drink_cranberry_juice',  label:'蔓越莓汁',    add:0  },
+  { id:'drink_fresh_milk_tea',   label:'鮮奶茶',      add:15 },
+  { id:'drink_soy_milk_tea',     label:'豆漿紅茶',    add:15 },
+  { id:'drink_barley_milk_milk', label:'薏仁牛奶',    add:15 },
+  { id:'drink_cocoa_milk',       label:'可可亞牛奶',  add:30 },
+  { id:'drink_cold_brew_tea',    label:'冷泡茶',      add:10 },
+];
 
 /* === Render：分類卡片（帶入分類 key，讓彈窗知道走哪組規則） === */
 function renderCategory(list, targetId, catKey){
-  const root = el(targetId); root.innerHTML='';
+  const root = el(targetId); if (!root) return;
+  root.innerHTML='';
   list.forEach(item=>{
     const itemWithCat = { ...item, _catKey: catKey }; // 記錄分類 key
     const card = document.createElement('div');
@@ -602,40 +566,37 @@ function renderCategory(list, targetId, catKey){
 /* === 選項彈窗 === */
 let currentItem = null;
 function openItemModal(item){
-  // 再次檢查是否售完（避免 race）
   checkSoldOutByName(item.name).then(sold=>{
-    if (sold) {
-      alert('此品項已售完');
-      enforceSoldOutOnMenu(true);
-      return;
-    }
+    if (sold) { alert('此品項已售完'); enforceSoldOutOnMenu(true); return; }
+
     currentItem = item;
     ensureItemModal();
     document.body.classList.add('overflow-hidden');
 
-    // 標題
     el('#pmTitle').textContent = item.name;
 
-    // 是否需要「主食」（保留原功能；目前你的早餐類不會用到）
+    // 早餐不需要主食；保留相容
     const stapleWrap = el('#pmStapleWrap');
-    const stapleSel  = el('#pmStaple');
     const needStaple = !!item.requireStaple;
     stapleWrap.style.display = needStaple ? '' : 'none';
-    stapleSel.innerHTML='';
-    if (needStaple) {
-      HOTPOT_STAPLES.forEach(s=>{
-        const o=document.createElement('option'); o.value=s; o.textContent=s; stapleSel.appendChild(o);
-      });
-    }
 
-    // 動態選項（依分類規則）
-    buildOptionControls(item._catKey);
+    // 依分類生成 UI
+    if (item._catKey === 'drinks') {
+      buildDrinkControls(item);
+    } else if (item._catKey === 'coffee') {
+      buildCoffeeControls(item);
+    } else if (item._catKey === 'setmeal') {
+      buildSetmealControls(item);
+    } else if (item._catKey === 'toast' && item.tag === 'jam') {
+      buildJamToastControls();     // 果醬吐司選口味
+    } else {
+      buildOptionControls(item._catKey); // 一般類
+    }
 
     // 備註 & 數量
     el('#pmRemark').value = '';
     const qtyInput = el('#pmQty'); qtyInput.value = 1;
 
-    // 小計：基礎價 + 加價（依目前 UI 勾選）
     const updatePmSubtotal = ()=>{
       const qty = Math.max(1, parseInt(qtyInput.value)||1);
       const unit = calcUnitPrice(item);
@@ -644,7 +605,6 @@ function openItemModal(item){
     el('#pmDec').onclick = ()=>{ qtyInput.value = Math.max(1, (parseInt(qtyInput.value)||1) - 1); updatePmSubtotal(); };
     el('#pmInc').onclick = ()=>{ qtyInput.value = (parseInt(qtyInput.value)||1) + 1; updatePmSubtotal(); };
     qtyInput.oninput = updatePmSubtotal;
-    // 任何選項變化也要重算
     el('#pmOptions').querySelectorAll('input,select').forEach(ctrl=>{
       ctrl.addEventListener('change', updatePmSubtotal);
     });
@@ -655,27 +615,18 @@ function openItemModal(item){
       if (sold) { alert('此品項已售完'); enforceSoldOutOnMenu(true); return; }
 
       const qty    = Math.max(1, parseInt(qtyInput.value)||1);
-      const staple = needStaple ? el('#pmStaple').value : '';
       const remark = (el('#pmRemark')?.value || '').trim();
 
       // 讀取選項 → 價差與說明
-      const { optionDelta, optionSummary } = readOptionSelections(item._catKey);
+      const { optionDelta, optionSummary } = readSelectionsFor(item);
 
-      // 以「加價後單價」建一份放進購物車的 item 副本
-      const itemForCart = { ...item, price: item.price + optionDelta };
-
-      // 把選項摘要與主食寫進顯示名稱（後端現在把 name 帶過去）
-      const staplePart = needStaple ? `｜主食：${staple || '-'}` : '';
-      const optsPart   = optionSummary ? `｜${optionSummary}` : '';
-      const remarkPart = remark ? `｜備註：${remark}` : '';
-
+      const itemForCart = { ...item, price: (item.price||0) + optionDelta };
       addToCart({
         item: itemForCart,
         qty,
         remark,
-        staple,
-        needStaple,
-        _optionText: (optsPart || '')
+        needStaple:false,
+        _optionText: optionSummary ? `｜${optionSummary}` : ''
       });
 
       closeItemModal();
@@ -696,7 +647,7 @@ function ensureItemModal(){
   wrap.innerHTML = `
     <div class="absolute inset-0 bg-black/40"></div>
     <div class="relative z-10 min-h-full flex items-start justify-center py-6 px-3">
-      <div class="w-full max-w-2xl card bg-white p-6 max-h:[85vh] scroll-y">
+      <div class="w-full max-w-2xl card bg-white p-6 max-h-[85vh] scroll-y">
         <div class="flex items-start justify-between">
           <div class="min-w-0">
             <h3 id="pmTitle" class="text-xl font-semibold"></h3>
@@ -739,7 +690,7 @@ function ensureItemModal(){
   wrap.querySelector('#pmClose').addEventListener('click', closeItemModal);
 }
 
-/* === 動態選項：UI 生成 / 讀取 / 計價 === */
+/* === 一般類（漢堡/吐司/蛋餅/總匯/客製） === */
 function buildOptionControls(catKey){
   const root = el('#pmOptions'); root.innerHTML = '';
   const rules = CATEGORY_OPTION_RULES[catKey] || [];
@@ -764,26 +715,220 @@ function buildOptionControls(catKey){
           </select>
         </div>
       `);
-    } else if (rule.type === 'enum'){
-      const id = `opt_${rule.key}`;
-      const opts = (rule.options||[]).map(o=>`<option value="${o.value}">${o.label}</option>`).join('');
-      root.insertAdjacentHTML('beforeend', `
-        <div>
-          <label class="text-sm text-slate-600">${rule.label}</label>
-          <select id="${id}" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
-                  data-opt-type="enum" data-key="${rule.key}">
-            ${opts}
-          </select>
-        </div>
-      `);
     }
   });
 }
-function readOptionSelections(catKey){
-  const rules = CATEGORY_OPTION_RULES[catKey] || [];
+
+/* === 果醬吐司：彈窗選口味 === */
+function buildJamToastControls(){
+  const root = el('#pmOptions'); root.innerHTML = '';
+  root.insertAdjacentHTML('beforeend', `
+    <div>
+      <label class="text-sm text-slate-600">口味</label>
+      <select id="opt_jam_flavor" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
+              data-kind="jam">
+        <option value="草莓">草莓</option>
+        <option value="巧克力">巧克力</option>
+        <option value="花生">花生</option>
+      </select>
+    </div>
+  `);
+}
+
+/* === 飲料：杯型/冰熱（依 DRINKS_META 決定可選與加價） === */
+function buildDrinkControls(item, containerSel='#pmOptions'){
+  const meta = DRINKS_META[item.id] || { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] };
+  const root = el(containerSel); root.innerHTML = '';
+
+  const sizeOpts = meta.sizes.map(sz=>{
+    let extra = 0;
+    if (meta.baseSize === 'M') extra = (sz==='L'?5:(sz==='XL'?10:0));
+    if (meta.baseSize === 'L') extra = (sz==='XL'?10:0);
+    const text = sz==='M'?'中':(sz==='L'?'大':'特大');
+    return `<option value="${sz}" data-extra="${extra}">${text}${extra?`（+${extra}）`:''}</option>`;
+  }).join('');
+
+  const tempOpts = meta.temps.map(t=>{
+    const text = t==='ice'?'冰':'熱';
+    return `<option value="${t}">${text}</option>`;
+  }).join('');
+
+  root.insertAdjacentHTML('beforeend', `
+    <div class="grid gap-3 md:grid-cols-2">
+      <div>
+        <label class="text-sm text-slate-600">杯型</label>
+        <select id="opt_drink_size" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
+                data-kind="drink_size">
+          ${sizeOpts}
+        </select>
+      </div>
+      <div>
+        <label class="text-sm text-slate-600">溫度</label>
+        <select id="opt_drink_temp" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
+                data-kind="drink_temp">
+          ${tempOpts}
+        </select>
+      </div>
+    </div>
+  `);
+}
+
+/* === 研磨咖啡：固定 M/L 價（不套 +5/+10）=== */
+const COFFEE_PRICE = {
+  // 以 MENU.coffee 的 price 為「中杯價」，大杯價可在此獨立設定（照 PDF 可自行調）
+  coffee_drip:      { M:50, L:60 },
+  coffee_americano: { M:40, L:50 },
+  coffee_latte:     { M:40, L:55 },
+  coffee_special:   { M:35, L:45 },
+  coffee_yuanyang:  { M:40, L:50 },
+};
+function buildCoffeeControls(item){
+  const price = COFFEE_PRICE[item.id] || { M:item.price||0, L:(item.price||0)+10 };
+  const root = el('#pmOptions'); root.innerHTML = '';
+  root.insertAdjacentHTML('beforeend', `
+    <div class="grid gap-3 md:grid-cols-2">
+      <div>
+        <label class="text-sm text-slate-600">杯型</label>
+        <select id="opt_coffee_size" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
+                data-kind="coffee_size">
+          <option value="M" data-extra="0">中（$${price.M}）</option>
+          <option value="L" data-extra="${price.L - price.M}">大（$${price.L}）</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-sm text-slate-600">溫度</label>
+        <select id="opt_coffee_temp" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
+                data-kind="coffee_temp">
+          <option value="ice">冰</option>
+          <option value="hot">熱</option>
+        </select>
+      </div>
+    </div>
+  `);
+}
+
+/* === 套餐：上方確認套餐、下方選「套餐飲品」+ 杯型/冰熱 + 加價 === */
+function buildSetmealControls(item){
+  const root = el('#pmOptions'); root.innerHTML = '';
+
+  // 1) 套餐確認（展示用）
+  root.insertAdjacentHTML('beforeend', `
+    <div class="border rounded-xl">
+      <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">套餐</div>
+      <div class="px-3 py-2 flex items-center gap-3">
+        <input type="radio" checked class="accent-slate-900">
+        <span>${item.name}</span>
+      </div>
+    </div>
+  `);
+
+  // 2) 套餐飲品（先選品項，再出現杯型/冰熱；價差寫在 label）
+  const drinkRows = SETMEAL_DRINKS.map(d=>{
+    const addTxt = d.add ? `+${d.add}` : '';
+    return `
+      <label class="flex items-center justify-between gap-3 px-3 py-2 border-b last:border-0">
+        <span class="flex items-center gap-3">
+          <input type="radio" name="opt_set_drink" value="${d.id}" data-add="${d.add||0}">
+          <span>${d.label}${addTxt ? `（${addTxt}）` : ''}</span>
+        </span>
+      </label>`;
+  }).join('');
+
+  root.insertAdjacentHTML('beforeend', `
+    <div class="border rounded-xl mt-4">
+      <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">套餐飲品</div>
+      <div id="set_drink_list" class="divide-y">${drinkRows}</div>
+      <div id="set_drink_opts" class="p-3 hidden"></div>
+    </div>
+  `);
+
+  // 行為：選了飲品才顯示杯型/冰熱（沿用 buildDrinkControls 規則）
+  const list = root.querySelector('#set_drink_list');
+  const opts = root.querySelector('#set_drink_opts');
+  list.addEventListener('change', e=>{
+    const id = root.querySelector('input[name="opt_set_drink"]:checked')?.value;
+    if (!id) { opts.classList.add('hidden'); opts.innerHTML=''; return; }
+    const tmpItem = { id, _catKey:'drinks' };
+    // 若某筆自帶 meta（如無糖綠茶），臨時覆寫 DRINKS_META
+    const metaExtra = SETMEAL_DRINKS.find(x=>x.id===id)?.meta;
+    if (metaExtra) DRINKS_META[id] = metaExtra;
+    buildDrinkControls(tmpItem, '#set_drink_opts');
+    opts.classList.remove('hidden');
+  });
+}
+
+/* === 讀取各類型的選擇 & 計價 === */
+function readSelectionsFor(item){
+  // 套餐
+  if (item._catKey === 'setmeal'){
+    const chosen = el('input[name="opt_set_drink"]:checked');
+    let parts = [];
+    let delta = 0;
+    if (chosen){
+      const drinkId = chosen.value;
+      const add = Number(chosen.dataset.add||0);
+      delta += add;
+      const label = SETMEAL_DRINKS.find(d=>d.id===drinkId)?.label || '';
+
+      const sizeSel = el('#opt_drink_size');
+      const tempSel = el('#opt_drink_temp');
+      let szTxt='', szAdd=0, tempTxt='';
+      if (sizeSel){
+        const opt = sizeSel.selectedOptions[0];
+        szAdd = Number(opt.dataset.extra||0);
+        delta += szAdd;
+        szTxt = opt.textContent.replace(/（\+\d+）/,'');
+      }
+      if (tempSel) tempTxt = (tempSel.value==='ice'?'冰':'熱');
+
+      parts.push(`套餐飲品：${label}${szTxt?`｜${szTxt}`:''}${tempTxt?`｜${tempTxt}`:''}`);
+    }
+    return { optionDelta: delta, optionSummary: parts.join('｜') };
+  }
+
+  // 飲料
+  if (item._catKey === 'drinks'){
+    const sizeSel = el('#opt_drink_size');
+    const tempSel = el('#opt_drink_temp');
+    let delta = 0, parts = [];
+    if (sizeSel){
+      const so = sizeSel.selectedOptions[0];
+      delta += Number(so.dataset.extra||0);
+      parts.push('尺寸：' + so.textContent.replace(/（\+\d+）/,''));
+    }
+    if (tempSel){
+      parts.push('溫度：' + (tempSel.value==='ice'?'冰':'熱'));
+    }
+    return { optionDelta: delta, optionSummary: parts.join('｜') };
+  }
+
+  // 研磨咖啡
+  if (item._catKey === 'coffee'){
+    const sizeSel = el('#opt_coffee_size');
+    const tempSel = el('#opt_coffee_temp');
+    let delta = 0, parts = [];
+    if (sizeSel){
+      const so = sizeSel.selectedOptions[0];
+      delta += Number(so.dataset.extra||0);
+      parts.push('尺寸：' + (sizeSel.value==='M'?'中':'大'));
+    }
+    if (tempSel){
+      parts.push('溫度：' + (tempSel.value==='ice'?'冰':'熱'));
+    }
+    return { optionDelta: delta, optionSummary: parts.join('｜') };
+  }
+
+  // 果醬吐司
+  if (item._catKey === 'toast' && item.tag === 'jam'){
+    const sel = el('#opt_jam_flavor');
+    const taste = sel?.value || '';
+    return { optionDelta: 0, optionSummary: taste?`口味：${taste}`:'' };
+  }
+
+  // 一般類（漢堡/吐司/蛋餅/總匯/客製）
+  const rules = CATEGORY_OPTION_RULES[item._catKey] || [];
   let delta = 0;
   const parts = [];
-
   rules.forEach(rule=>{
     if (rule.type === 'toggle'){
       const input = el(`#opt_${rule.key}`);
@@ -801,19 +946,12 @@ function readOptionSelections(catKey){
         delta += p;
         parts.push(label);
       }
-    } else if (rule.type === 'enum'){
-      const sel = el(`#opt_${rule.key}`);
-      const v = sel?.value || '';
-      const opt = sel?.selectedOptions?.[0];
-      const labelText = opt ? opt.textContent : v;
-      if (labelText) parts.push(`${rule.label}：${labelText}`);
     }
   });
-
   return { optionDelta: delta, optionSummary: parts.join('｜') };
 }
 function calcUnitPrice(item){
-  const { optionDelta } = readOptionSelections(item._catKey);
+  const { optionDelta } = readSelectionsFor(item);
   return (item.price || 0) + optionDelta;
 }
 
@@ -836,14 +974,13 @@ function renderCart(){
   if(state.cart.length===0){ root.innerHTML='<div class="text-slate-500">購物車目前沒有商品。</div>'; }
   state.cart.forEach((e, idx)=>{
     const linePrice = (e.item.price||0)*e.qty;
-    const staplePart = e.needStaple ? ` ｜ 主食：${e.staple||'-'}` : '';
     const optPart    = e._optionText ? ` ${e._optionText}` : '';
     const div=document.createElement('div');
     div.className='card bg-white p-4';
     div.innerHTML=`
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-          <div class="font-medium">${e.item.name}${staplePart}${optPart}</div>
+          <div class="font-medium">${e.item.name}${optPart}</div>
           <div class="text-sm text-slate-700 mt-1">備註：${e.remark ? e.remark : '(無)'}</div>
           <div class="text-sm text-slate-600 mt-1">
             數量 ×
@@ -885,7 +1022,7 @@ function fillPickupSelect(){
     const hh = pad2(dt.getHours());
     const mm = pad2(dt.getMinutes());
     const o = document.createElement('option');
-    o.value = dt.toISOString(); // 後端會以 ISO 解析
+    o.value = dt.toISOString();
     o.textContent = `${hh}:${mm}`;
     sel.appendChild(o);
   });
@@ -895,7 +1032,6 @@ function fillPickupSelect(){
   sel.insertBefore(auto, sel.firstChild);
   sel.value = '';
 
-  // 是否目前不在可取時段
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), BUSINESS.startHour, 0, 0);
   const end   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), BUSINESS.endHour, 0, 0);
@@ -914,84 +1050,49 @@ function chooseEarliestSlot(now = new Date()){
   return state.slots[state.slots.length - 1] || null;
 }
 
-/* === Sold-out 狀態：從 GAS /menu 讀取並套用到按鈕 === */
+/* === Sold-out 狀態 === */
 let SOLDOUT_CACHE = { ts: 0, byName: new Map() };
 const SOLDOUT_TTL_MS = 30 * 1000;
 
 async function fetchMenuStatus(force=false){
   const now = Date.now();
-
-  // 沒設定 ENDPOINT：回傳空資料，前端正常運作
-  if (!ENDPOINT) {
-    SOLDOUT_CACHE = { ts: now, byName: new Map() };
-    return SOLDOUT_CACHE;
-  }
-
+  if (!ENDPOINT) { SOLDOUT_CACHE = { ts: now, byName: new Map() }; return SOLDOUT_CACHE; }
   if (!force && (now - SOLDOUT_CACHE.ts) < SOLDOUT_TTL_MS) return SOLDOUT_CACHE;
-
-  const url = `${ENDPOINT}?action=menu&_=${now}&apiKey=${API_KEY}`;
-  const r = await fetch(url);
-  const t = await r.text();
-
-  let d; 
-  try { d = JSON.parse(t); } 
-  catch { 
-    // 讀不到就當無售完
+  try{
+    const url = `${ENDPOINT}?action=menu&_=${now}&apiKey=${API_KEY}`;
+    const r = await fetch(url);
+    const d = await r.json();
+    const byName = new Map();
+    for (const it of d.items||[]) if (it.name) byName.set(String(it.name), !!it.soldOut);
+    SOLDOUT_CACHE = { ts: now, byName };
+  }catch{
     SOLDOUT_CACHE = { ts: now, byName: new Map() };
-    return SOLDOUT_CACHE;
   }
-
-  if (!d.ok) {
-    SOLDOUT_CACHE = { ts: now, byName: new Map() };
-    return SOLDOUT_CACHE;
-  }
-
-  const byName = new Map();
-  for (const it of d.items || []) {
-    if (it.name) byName.set(String(it.name), !!it.soldOut);
-  }
-  SOLDOUT_CACHE = { ts: now, byName };
   return SOLDOUT_CACHE;
 }
-
 async function isSoldOut(name){
   const { byName } = await fetchMenuStatus(false);
   return !!byName.get(name);
 }
-async function checkSoldOutByName(name){
-  try {
-    return await isSoldOut(name);
-  } catch {
-    return false;
-  }
-}
+async function checkSoldOutByName(name){ try{ return await isSoldOut(name);}catch{ return false; } }
 
-
-/* 把售完狀態套用到「選擇」按鈕（不改事件；顯示不可點徽章） */
 async function enforceSoldOutOnMenu(force = false) {
   try {
     const { byName } = await fetchMenuStatus(force);
-
     document.querySelectorAll('.choose-btn').forEach(btn => {
       const name = btn.dataset.name || '';
       const sold = !!byName.get(name);
-
       const wrap = btn.parentElement;
       if (!wrap) return;
-
       let soldPill = wrap.querySelector('.sold-pill');
-
       if (sold) {
         btn.classList.add('hidden');
         if (!soldPill) {
           soldPill = document.createElement('span');
           soldPill.className = [
-            'sold-pill',
-            'inline-flex items-center justify-center',
-            'px-4 py-2','rounded-xl',
-            'border border-slate-300',
-            'bg-slate-100 text-slate-500',
-            'cursor-not-allowed select-none'
+            'sold-pill','inline-flex items-center justify-center',
+            'px-4 py-2','rounded-xl','border border-slate-300',
+            'bg-slate-100 text-slate-500','cursor-not-allowed select-none'
           ].join(' ');
           soldPill.textContent = '售完';
           wrap.insertBefore(soldPill, btn);
@@ -1001,9 +1102,7 @@ async function enforceSoldOutOnMenu(force = false) {
         if (soldPill) soldPill.remove();
       }
     });
-  } catch (err) {
-    console.warn('套用售完狀態失敗：', err);
-  }
+  } catch (err) { console.warn('套用售完狀態失敗：', err); }
 }
 
 /* === Apps Script API：reserve + confirm + sync === */
@@ -1028,9 +1127,8 @@ async function apiConfirm(order){
   return d;
 }
 async function apiSync(){
-  try {
-    await fetch(ENDPOINT, { method: 'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ apiKey: API_KEY, action: 'sync' }) });
-  } catch {}
+  try { await fetch(ENDPOINT, { method: 'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ apiKey: API_KEY, action: 'sync' }) }); }
+  catch {}
 }
 
 /* === 小工具：顯示 HH:mm === */
@@ -1063,20 +1161,13 @@ async function onSubmitOrder(e) {
     const autoSlot = (diningType === 'takeout' && !userChosenISO) ? chooseEarliestSlot() : null;
     const pickupAtHintISO = (userChosenISO || (autoSlot ? autoSlot.toISOString() : ''));
 
-    // 檢查取餐時間是否早於創建時間
     const createdAt = new Date();
     const selectedPickupTime = pickupAtHintISO ? new Date(pickupAtHintISO) : createdAt;
-    if (selectedPickupTime < createdAt) {
-      showErr('取餐時間不能早於訂單創建時間。');
-      return;
-    }
+    if (selectedPickupTime < createdAt) { showErr('取餐時間不能早於訂單創建時間。'); return; }
 
-    // 轉為後端格式（把選項與主食寫進 name）
     const items = state.cart.map(e => {
-      const staplePart = e.needStaple ? `｜主食：${e.staple || '-'}` : '';
       const optsPart   = e._optionText ? `｜${e._optionText}` : '';
-      const remarkPart = e.remark ? `｜備註：${e.remark}` : '';
-      const nameWith = `${e.item.name}${staplePart}${optsPart}${remarkPart}`;
+      const nameWith = `${e.item.name}${optsPart}`;
       return { id: e.item.id, name: nameWith, price: e.item.price, qty: e.qty };
     });
     const subtotal = items.reduce((s, it) => s + it.price * it.qty, 0);
@@ -1093,11 +1184,9 @@ async function onSubmitOrder(e) {
       desiredPickupTime: (diningType === 'takeout' ? (pickupAtHintISO || null) : null)
     };
 
-    // A) reserve
     const res = await apiReserve(orderId, pickupAtHintISO, diningType, tableNo);
     if (!res.ok) { showErr(mapApiError(res.error, res.message)); return; }
 
-    // 成功畫面
     el('#pickupNoText').textContent = String(res.pickupNo ?? '');
     if (diningType === 'takeout') {
       el('#successTakeoutTime').classList.remove('hidden');
@@ -1110,13 +1199,7 @@ async function onSubmitOrder(e) {
     }
     el('#successModal').classList.remove('hidden');
 
-    // B) confirm → sync
-    (async () => {
-      try {
-        const c = await apiConfirm(order);
-        if (c && c.ok) { apiSync(); }
-      } catch (_) {}
-    })();
+    (async () => { try { const c = await apiConfirm(order); if (c && c.ok) { apiSync(); } } catch (_) {} })();
 
     state.cart = []; renderCart();
 
@@ -1147,10 +1230,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   el('#year').textContent=new Date().getFullYear();
   ensureItemModal();
 
-  // 先把售完狀態拉回來
   fetchMenuStatus(true).catch(()=>{});
 
-  // Render 八大類（帶上分類 key）
   renderCategory(MENU.setmeal, '#setmealList', 'setmeal');
   renderCategory(MENU.burger,  '#burgerList',  'burger');
   renderCategory(MENU.toast,   '#toastList',   'toast');
@@ -1158,9 +1239,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderCategory(MENU.club,    '#clubList',    'club');
   renderCategory(MENU.special, '#specialList', 'special');
   renderCategory(MENU.custom,  '#customList',  'custom');
+  // 若你在 HTML 補了美味小點區塊（id="snacksList"），把下一行打開
+  // renderCategory(MENU.snacks,  '#snacksList',  'snacks');
   renderCategory(MENU.drinks,  '#drinksList',  'drinks');
+  // 研磨咖啡若有區塊再渲染，例如 #coffeeList
+  // renderCategory(MENU.coffee,  '#coffeeList',  'coffee');
 
-  // 售完狀態
   (async ()=>{ await enforceSoldOutOnMenu(true); setInterval(()=> enforceSoldOutOnMenu(false), SOLDOUT_TTL_MS); })();
 
   ensureCategoryAnchors();
@@ -1173,16 +1257,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   el('#checkoutForm').addEventListener('submit',onSubmitOrder);
   el('#closeSuccess').addEventListener('click',()=>el('#successModal').classList.add('hidden'));
 
-  // 外帶時段初始化
   initSlots();
-
-  // 切換內用/外帶
-  document.querySelectorAll('input[name="diningType"]').forEach(r=>{
-    r.addEventListener('change', onDiningTypeChange);
-  });
+  document.querySelectorAll('input[name="diningType"]').forEach(r=>{ r.addEventListener('change', onDiningTypeChange); });
   onDiningTypeChange();
-
-  // 每分鐘刷新可選時段
   setInterval(initSlots, 60*1000);
 });
 
