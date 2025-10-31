@@ -522,7 +522,6 @@ const MENU = {
 
   /* 研磨咖啡：依 PDF 價（不套 +5/+10；彈窗用固定 M/L 價） */
   coffee: [
-    { id:"coffee_drip",      name:"研磨咖啡",   price:50 },
     { id:"coffee_americano", name:"美式咖啡",   price:40 },
     { id:"coffee_latte",     name:"拿鐵咖啡",   price:40 },
     { id:"coffee_special",   name:"特調咖啡",   price:35 },
@@ -823,11 +822,10 @@ function buildDrinkControls(item, containerSel='#pmOptions'){
 
 /* === 研磨咖啡：固定 M/L 價（不套 +5/+10）=== */
 const COFFEE_PRICE = {
-  coffee_drip:      { M:50, L:60 },
-  coffee_americano: { M:40, L:50 },
-  coffee_latte:     { M:40, L:55 },
-  coffee_special:   { M:35, L:45 },
-  coffee_yuanyang:  { M:40, L:50 },
+  coffee_americano: { M:35, L:55 },
+  coffee_latte:     { M:50, L:75 },
+  coffee_special:   { M:40, L:60 },
+  coffee_yuanyang:  { M:40, L:60 },
 };
 function buildCoffeeControls(item){
   const price = COFFEE_PRICE[item.id] || { M:item.price||0, L:(item.price||0)+10 };
