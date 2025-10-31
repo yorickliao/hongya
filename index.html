@@ -91,7 +91,7 @@
       <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0" data-cat="omelet"  style="color:#c9141a">蛋餅</button>
       <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0" data-cat="club"    style="color:#242d47">總匯</button>
       <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0" data-cat="special" style="color:#c9141a">店長推薦</button>
-      <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0" data-cat="custom"  style="color:#242d47">愛吃自己配</button>
+      <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0" data-cat="custom"  style="color:#242d47">帕瑪森/捲餅/香頌/燒餅</button>
       <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0" data-cat="snacks"  style="color:#c9141a">美味小點</button>
       <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0" data-cat="coffee"  style="color:#242d47">研磨咖啡</button>
       <button class="catbtn px-3 py-1.5 rounded-xl border border-slate-300 bg-white shrink-0" data-cat="drinks"  style="color:#c9141a">飲料</button>
@@ -155,11 +155,11 @@
       <div id="specialList" class="grid grid-cols-2 gap-4"></div>
     </div>
 
-    <!-- 愛吃自己配（A 色） -->
+    <!-- 帕瑪森/捲餅/香頌/燒餅（A 色） -->
     <div class="cat-wrap cat-a">
       <div class="cat-header">
         <span class="cat-swatch"></span>
-        <h2 class="text-lg font-semibold">愛吃自己配</h2>
+        <h2 class="text-lg font-semibold">帕瑪森/捲餅/香頌/燒餅</h2>
       </div>
       <div id="customList" class="grid grid-cols-2 gap-4"></div>
     </div>
@@ -385,12 +385,10 @@ const MENU = {
   ],
 
   burger: [
-    { id:"burg_american_pork",            name:"美式大豬堡（原）",        price:85 },
-    { id:"burg_american_pork_spicy",      name:"美式大豬堡（辣）",        price:85 },
-    { id:"burg_fillet_chicken_egg",       name:"菲力雞排蛋堡（原）",      price:80 },
-    { id:"burg_fillet_chicken_egg_spicy", name:"菲力雞排蛋堡（辣）",      price:80 },
-    { id:"burg_spicy_chicken_egg",        name:"卡拉雞腿蛋堡（原）",       price:80 },
-    { id:"burg_spicy_chicken_egg_spicy",  name:"卡拉雞腿蛋堡（辣）",       price:80 },
+    { id:"burg_american_pork",            name:"美式大豬堡",        price:85 },
+    { id:"burg_fillet_chicken_egg",       name:"菲力雞排蛋堡",      price:80 },
+    { id:"burg_spicy_chicken_egg",        name:"卡拉雞腿蛋堡（原味）",       price:80 },
+    { id:"burg_spicy_chicken_egg_spicy",  name:"卡拉雞腿蛋堡（辣味）",       price:80 },
     { id:"burg_fish_egg",                 name:"酥炸魚柳蛋堡",            price:80 },
     { id:"burg_pepper_chicken_egg",       name:"椒麻雞排蛋堡",            price:80 },
     { id:"burg_shrimp_egg",               name:"金蝦蛋堡",                price:75 },
@@ -423,6 +421,7 @@ const MENU = {
     { id:"toast_cheese_egg",     name:"起司蛋吐司",     price:35 },
     { id:"toast_plain_egg",      name:"吐司夾蛋",       price:30 },
     { id:"toast_jam",            name:"果醬吐司",       price:20, tag:"jam" },
+    { id:"thin_toast_garlic",    name:"香蒜吐司",       price:25 },
     { id:"toast_garlic",         name:"厚片吐司（香蒜）", price:35 },
     { id:"toast_matcha",         name:"厚片吐司（抹茶）", price:40 },
     { id:"toast_cocoa",          name:"厚片吐司（可可）", price:40 },
@@ -766,6 +765,8 @@ function buildJamToastControls(){
         <option value="草莓">草莓</option>
         <option value="巧克力">巧克力</option>
         <option value="花生">花生</option>
+        <option value="奶油">奶油</option>
+        <option value="奶酥">奶酥</option>
       </select>
     </div>
   `);
@@ -1305,7 +1306,7 @@ const CATEGORY_SECTIONS = [
   { key:'omelet',  label:'蛋餅',       listSel:'#omeletList',  color:'#c9141a' },
   { key:'club',    label:'總匯',       listSel:'#clubList',    color:'#242d47' },
   { key:'special', label:'店長推薦',   listSel:'#specialList', color:'#c9141a' },
-  { key:'custom',  label:'愛吃自己配', listSel:'#customList',  color:'#242d47' },
+  { key:'custom',  label:'帕瑪森/捲餅/香頌/燒餅', listSel:'#customList',  color:'#242d47' },
   { key:'snacks',  label:'美味小點',   listSel:'#snacksList',  color:'#c9141a' },
   { key:'coffee',  label:'研磨咖啡',   listSel:'#coffeeList',  color:'#242d47' },
   { key:'drinks',  label:'飲料',       listSel:'#drinksList',  color:'#c9141a' },
