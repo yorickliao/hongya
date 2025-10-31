@@ -635,9 +635,10 @@ function openItemModal(item){
     el('#pmDec').onclick = ()=>{ qtyInput.value = Math.max(1, (parseInt(qtyInput.value)||1) - 1); updatePmSubtotal(); };
     el('#pmInc').onclick = ()=>{ qtyInput.value = (parseInt(qtyInput.value)||1) + 1; updatePmSubtotal(); };
     qtyInput.oninput = updatePmSubtotal;
-    el('#pmOptions').querySelectorAll('input,select').forEach(ctrl=>{
-      ctrl.addEventListener('change', updatePmSubtotal);
-    });
+    const pmOptions = el('#pmOptions');
+    // 用委派，避免動態新增的杯型/冰熱選單沒被監聽
+    pmOptions.onchange = updatePmSubtotal;
+
     updatePmSubtotal();
 
     el('#pmAdd').onclick = async ()=>{
@@ -895,6 +896,9 @@ function buildSetmealControls(item){
     if (metaExtra) DRINKS_META[id] = metaExtra;
     buildDrinkControls(tmpItem, '#set_drink_opts');
     opts.classList.remove('hidden');
+    // 讓小計立刻重算（openItemModal 裡對 #pmOptions 做了委派 onchange）
+    document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
+
   });
 }
 
