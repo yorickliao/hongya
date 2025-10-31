@@ -368,27 +368,26 @@ const CATEGORY_OPTION_RULES = {
 const MENU = {
   setmeal: [
     { id:"set_placeholder",            name:"美式奔牛堡套餐",     price:140 },
-    { id:"set_american_pork",          name:"美式大豬堡套餐",   price:120 },
     { id:"set_chicken_tender",         name:"起飛嫩雞堡套餐",   price:120 },
     { id:"set_double_pork_cheese",     name:"雙層豬肉起司堡套餐", price:105 },
-    { id:"set_french_mash_salad",      name:"法式薯泥沙拉套餐", price:105 },
+    { id:"set_german_parmesan",        name:"德式帕瑪森套餐",   price:120 },
     { id:"set_euro_mash_salad",        name:"歐式薯泥沙拉套餐", price:105 },
-    { id:"set_german_parmesan",        name:"德式帕瑪森套餐",   price:140 },
-    { id:"set_fried_chicken",          name:"美式脆雞堡套餐",   price:130 },
+    { id:"set_french_mash_salad",      name:"法式薯泥沙拉套餐", price:105 },
+    { id:"set_lemon_chicken_noodle",   name:"檸檬雞柳麵套餐",   price:110 },
     { id:"set_stirfry_pork_noodle",    name:"蔥爆燒肉炒麵套餐", price:95  },
-    { id:"set_loin_iron_noodle",       name:"里肌鐵板麵套餐",   price:110 },
-    { id:"set_green_curry",            name:"沙嗲咖哩麵套餐",   price:95  },
-    { id:"set_lemon_chicken_noodle",   name:"檸檬雞柳麵套餐",   price:100 },
-    { id:"set_signature_club",         name:"招牌總匯套餐",     price:125 },
+    { id:"set_loin_iron_noodle",       name:"里肌鐵板麵套餐",   price:95 },
+    { id:"set_signature_club",         name:"招牌總匯套餐",     price:100 },
+    { id:"set_greenonion_gina",        name:"香蔥吉拿套餐",   price:90 },
     { id:"set_kids_meal",              name:"歡樂兒童餐",       price:90  },
+    { id:"set_fried_chicken",          name:"美式脆雞堡套餐",   price:130 },
+    { id:"set_green_curry",            name:"沙嗲咖哩麵套餐",   price:125  },
+    { id:"set_american_pork",          name:"美式大豬堡套餐",   price:120 },
     { id:"set_waffle",                 name:"華夫鬆餅套餐",     price:130 },
-    { id:"set_fried_fish_noodle",      name:"酥炸魚柳麵套餐",   price:120 },
-    
   ],
 
   burger: [
     { id:"burg_american_pork",            name:"美式大豬堡",        price:85 },
-    { id:"burg_fillet_chicken_egg",       name:"菲力雞排蛋堡",      price:80 },
+    { id:"burg_fillet_chicken_egg",       name:"菲力雞排蛋堡",      price:85 },
     { id:"burg_spicy_chicken_egg",        name:"卡拉雞腿蛋堡（原味）",       price:80 },
     { id:"burg_spicy_chicken_egg_spicy",  name:"卡拉雞腿蛋堡（辣味）",       price:80 },
     { id:"burg_fish_egg",                 name:"酥炸魚柳蛋堡",            price:80 },
@@ -410,17 +409,25 @@ const MENU = {
 
   toast: [
     { id:"toast_fried_pork",     name:"炸豬排三明治",   price:95 },
-    { id:"toast_spicy_chicken",  name:"卡拉雞腿蛋吐司", price:80 },
+    { id:"toast_spicy_chicken",  name:"卡拉雞腿蛋吐司(原味)", price:80 },
+    { id:"toast_spicy_chicken",  name:"卡拉雞腿蛋吐司(辣味)", price:80 },
     { id:"toast_beef_egg",       name:"牛肉蛋吐司",     price:75 },
     { id:"toast_loin_egg",       name:"厚切里肌蛋吐司", price:75 },
     { id:"toast_shrimp_egg",     name:"金蝦蛋吐司",     price:75 },
     { id:"toast_cheese_chicken", name:"起司雞排蛋吐司", price:75 },
+    { id:"toast_hala_chicken",   name:"哈辣雞腿蛋吐司", price:75 },
+    { id:"toast_ligi",           name:"里肌蛋吐司",     price:60 },
+    { id:"toast_pig_liu",        name:"豬柳蛋吐司",     price:60 },
     { id:"toast_hash",           name:"薯餅蛋吐司",     price:60 },
+    { id:"toast_egg_salad",      name:"雞蛋沙拉吐司",    price:50 },
+    { id:"toast_chicken",        name:"麥香雞蛋吐司",     price:50 },
+    { id:"toast_tuna_egg",       name:"鮪魚蛋吐司",     price:50 },
     { id:"toast_pork_egg",       name:"豬肉蛋吐司",     price:50 },
     { id:"toast_bacon_egg",      name:"培根蛋吐司",     price:45 },
     { id:"toast_mash_salad",     name:"薯泥沙拉吐司",   price:45 },
     { id:"toast_ham_egg",        name:"火腿蛋吐司",     price:40 },
     { id:"toast_cheese_egg",     name:"起司蛋吐司",     price:35 },
+    { id:"toast_floss_egg",      name:"肉鬆蛋吐司",     price:35 },
     { id:"toast_plain_egg",      name:"吐司夾蛋",       price:30 },
     { id:"toast_jam_series",   name:"果醬吐司", price:20, tag:"jam_series" },
     { id:"toast_thick_series", name:"厚片吐司", price:30, tag:"thick_series" },
@@ -431,7 +438,8 @@ const MENU = {
 
   /* ★補回完整蛋餅清單 */
   omelet: [
-    { id:"omelet_karla",      name:"卡拉蛋餅（辣）", price:75 },
+    { id:"omelet_karla",      name:"卡拉蛋餅（原味）", price:75 },
+    { id:"omelet_karla_sp",   name:"卡拉蛋餅（辣味）", price:75 },
     { id:"omelet_loin",       name:"里肌蛋餅",       price:55 },
     { id:"omelet_mash",       name:"薯泥蛋餅",       price:50 },
     { id:"omelet_hash",       name:"薯餅蛋餅",       price:50 },
@@ -470,16 +478,16 @@ const MENU = {
 
   /* ★補回客製（帕瑪森系列為例） */
   custom: [
-    { id:"custom_parmesan_hchicken",     name:"帕瑪森 哈辣雞腿",   price:90 },
-    { id:"custom_parmesan_sausage",      name:"帕瑪森 德式香腸",   price:90 },
-    { id:"custom_parmesan_cheesechicken",name:"帕瑪森 起司雞排",   price:85 },
-    { id:"custom_parmesan_italian",      name:"帕瑪森 義式雞",     price:85 },
-    { id:"custom_parmesan_loin",         name:"帕瑪森 嫩煎里肌",   price:85 },
-    { id:"custom_parmesan_smokedchicken",name:"帕瑪森 香燻雞排",   price:85 },
-    { id:"custom_parmesan_eggsalad",     name:"帕瑪森 雞蛋沙拉",   price:80 },
-    { id:"custom_parmesan_tuna",         name:"帕瑪森 洋蔥鮪魚",   price:80 },
-    { id:"custom_parmesan_mash",         name:"帕瑪森 薯泥沙拉",   price:80 },
-    { id:"custom_parmesan_veggie",       name:"帕瑪森 鮮蔬沙拉",   price:70 },
+    { id:"custom_parmesan_hchicken",     name:"哈辣雞腿",   price:80 },
+    { id:"custom_parmesan_sausage",      name:"德式香腸",   price:80 },
+    { id:"custom_parmesan_cheesechicken",name:"起司雞排",   price:75 },
+    { id:"custom_parmesan_italian",      name:"義式雞",     price:75 },
+    { id:"custom_parmesan_loin",         name:"嫩煎里肌",   price:75 },
+    { id:"custom_parmesan_smokedchicken",name:"香燻雞排",   price:75 },
+    { id:"custom_parmesan_eggsalad",     name:"雞蛋沙拉",   price:70 },
+    { id:"custom_parmesan_tuna",         name:"洋蔥鮪魚",   price:70 },
+    { id:"custom_parmesan_mash",         name:"薯泥沙拉",   price:70 },
+    { id:"custom_parmesan_veggie",       name:"鮮蔬沙拉",   price:60 },
   ],
 
   /* 美味小點（放在飲料前） */
@@ -506,15 +514,17 @@ const MENU = {
 
   /* 飲料：中為 base；L +5、XL +10（有的只限 L/XL 或僅冰） */
   drinks: [
-    { id:"drink_black_tea",       name:"紅茶",           price:20 },
+    { id:"drink_black_tea",       name:"紅茶",           price:15 },
     { id:"drink_milk_tea",        name:"奶茶",           price:20 },
     { id:"drink_soy_milk",        name:"豆漿",           price:20 },
+    { id:"drink_soy_milk",        name:"無糖豆漿",        price:20 },
     { id:"drink_barley_milk",     name:"薏仁漿",         price:20 },
     { id:"drink_rice_milk",       name:"米漿",           price:20 },
     { id:"drink_orange_juice",    name:"柳橙汁",         price:30 }, // only 冰
     { id:"drink_cranberry_juice", name:"蔓越莓汁",       price:30 }, // only 冰
     { id:"drink_fresh_milk_tea",  name:"鮮奶茶",  price:35 },
-    { id:"drink_barley_milk_milk",name:"薏仁牛奶",  price:30 },
+    { id:"drink_barley_milk_milk",name:"薏仁牛奶",  price:35 },
+    { id:"drink_soy_milk_tea",    name:"豆奶茶",    price:30 },
     { id:"drink_cocoa_milk",      name:"可可亞牛奶",price:35 },
     { id:"drink_thai_milk_tea",   name:"泰式奶茶",price:35 },
     { id:"drink_cold_brew_tea",   name:"冷泡茶",  price:25 }, // only 冰
