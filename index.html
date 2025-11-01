@@ -173,9 +173,18 @@
       </div>
       <div id="snacksList" class="grid grid-cols-2 gap-4"></div>
     </div>
+
+    <!-- 鍋燒系列（A 色） -->
+    <div class="cat-wrap cat-a">
+      <div class="cat-header">
+        <span class="cat-swatch"></span>
+        <h2 class="text-lg font-semibold">鍋燒系列</h2>
+      </div>
+      <div id="hotpotList" class="grid grid-cols-2 gap-4"></div>
+    </div>
   
     <!-- 飲料/研磨咖啡（A/B 色） -->
-    <div class="cat-wrap cat-a">
+    <div class="cat-wrap cat-b">
       <div class="cat-header">
         <span class="cat-swatch"></span>
         <h2 class="text-lg font-semibold">飲料</h2>
@@ -183,7 +192,7 @@
       <div id="drinksList" class="grid grid-cols-2 gap-4"></div>
     </div>
 
-    <div class="cat-wrap cat-b">
+    <div class="cat-wrap cat-a">
       <div class="cat-header">
         <span class="cat-swatch"></span>
         <h2 class="text-lg font-semibold">研磨咖啡</h2>
@@ -358,7 +367,11 @@ const CATEGORY_OPTION_RULES = {
     { type:'toggle', key:'egg',    label:'加蛋',   price:15 },
     { type:'toggle', key:'cheese', label:'加起司', price:10 },
   ],
-
+  hotpot: [
+    { type:'toggle', key:'cheese', label:'加起司', price:10 },
+    { type:'toggle', key:'shacha', label:'加沙茶', price:10 },
+    { type:'toggle', key:'extra_noodle', label:'加麵', price:15 },
+  ],
   // drinks / coffee 都走專屬 UI（見 buildDrinkControls / buildCoffeeControls）
   drinks: [],
   coffee: []
@@ -511,6 +524,15 @@ const MENU = {
     { id:"snack_hotdog",                name:"熱狗",                price:25 },
     { id:"snack_fried_egg",             name:"荷包蛋",              price:15 },
   ],
+
+    /* 鍋燒系列 */
+  hotpot: [
+    { id:"hotpot_noodle",  name:"鍋燒意麵", price:75 },
+    { id:"hotpot_chicken", name:"鍋燒雞絲", price:75 },
+    { id:"hotpot_vermicelli", name:"鍋燒冬粉", price:75 },
+    { id:"hotpot_udon",    name:"鍋燒烏龍", price:80 },
+  ],
+
 
   /* 飲料：中為 base；L +5、XL +10（有的只限 L/XL 或僅冰） */
   drinks: [
@@ -1395,6 +1417,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderCategory(MENU.special, '#specialList', 'special');
   renderCategory(MENU.custom,  '#customList',  'custom');
   renderCategory(MENU.snacks,  '#snacksList',  'snacks');
+  renderCategory(MENU.hotpot,  '#hotpotList',  'hotpot');
   renderCategory(MENU.coffee,  '#coffeeList',  'coffee');
   renderCategory(MENU.drinks,  '#drinksList',  'drinks');
 
@@ -1426,8 +1449,10 @@ const CATEGORY_SECTIONS = [
   { key:'special', label:'店長推薦',   listSel:'#specialList', color:'#c9141a' },
   { key:'custom',  label:'帕瑪森/捲餅/香頌/燒餅', listSel:'#customList',  color:'#242d47' },
   { key:'snacks',  label:'美味小點',   listSel:'#snacksList',  color:'#c9141a' },
-  { key:'coffee',  label:'研磨咖啡',   listSel:'#coffeeList',  color:'#c9141a' },
-  { key:'drinks',  label:'飲料',       listSel:'#drinksList',  color:'#242d47' },
+  { key:'hotpot',  label:'鍋燒系列',   listSel:'#hotpotList',  color:'#242d47' },
+  { key:'drinks',  label:'飲料',       listSel:'#drinksList',  color:'#c9141a' },
+  { key:'coffee',  label:'研磨咖啡',   listSel:'#coffeeList',  color:'#242d47' },
+  
 ];
 
 function ensureCategoryAnchors(){
