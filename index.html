@@ -431,9 +431,9 @@ const MENU = {
     { id:"toast_plain_egg",      name:"吐司夾蛋",       price:30 },
     { id:"toast_jam_series",   name:"果醬吐司", price:20, tag:"jam_series" },
     { id:"toast_thick_series", name:"厚片吐司", price:30, tag:"thick_series" },
-    { id:"toast_bacon_bake",     name:"培根焗烤吐司",     price:55 },
-    { id:"toast_tuna_bake",      name:"鮪魚焗烤吐司",     price:55 },
-    { id:"toast_ham_bake",       name:"火腿焗烤吐司",     price:55 },
+    { id:"toast_bacon_bake",     name:"培根焗烤厚片",     price:55 },
+    { id:"toast_tuna_bake",      name:"鮪魚焗烤厚片",     price:55 },
+    { id:"toast_ham_bake",       name:"火腿焗烤厚片",     price:55 },
   ],
 
   /* ★補回完整蛋餅清單 */
@@ -760,6 +760,10 @@ function ensureItemModal(){
 /* === 一般類（漢堡/吐司/蛋餅/總匯/客製） === */
 function buildOptionControls(catKey){
   const root = el('#pmOptions'); root.innerHTML = '';
+  const itemId = currentItem?.id || '';  // ★ 新增：抓目前品項 id
+
+  // ★ 若是焗烤吐司三款，直接不顯示任何選項
+  if (['toast_bacon_bake','toast_tuna_bake','toast_ham_bake'].includes(itemId)) return;
   const rules = CATEGORY_OPTION_RULES[catKey] || [];
   rules.forEach(rule=>{
     if (rule.type === 'toggle'){
