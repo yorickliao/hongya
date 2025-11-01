@@ -340,31 +340,79 @@ const CATEGORY_OPTION_RULES = {
       { label:'漢堡', value:'漢堡', price:0 },
       { label:'圓形帕瑪森',       value:'圓形帕瑪森', price:10 },
     ]},
+    { type:'toggle', key:'ham',               label:'加火腿',           price:15 },
+    { type:'toggle', key:'pork_floss',        label:'加肉鬆',           price:15 },
+    { type:'toggle', key:'tuna',              label:'加鮪魚',           price:15 },
+    { type:'toggle', key:'beef_patty',        label:'加漢堡肉',         price:20 },
+    { type:'toggle', key:'mc_chicken',        label:'加麥香雞',         price:20 },
+    { type:'toggle', key:'bacon',             label:'加培根',           price:25 },
+    { type:'toggle', key:'loin',              label:'加里肌肉',         price:30 },
+    { type:'toggle', key:'kara_plain',        label:'加原味卡拉雞腿',   price:45 },
+    { type:'toggle', key:'kara_spicy',        label:'加辣味卡拉雞腿',   price:45 },
   ],
 
   toast: [
-    { type:'toggle', key:'cheese', label:'加起司', price:15 },
+    { type:'toggle', key:'cheese', label:'加起司', price:10 },
     { type:'toggle', key:'waffle', label:'換鬆餅', price:15 },
+    { type:'toggle', key:'ham',               label:'加火腿',           price:15 },
+    { type:'toggle', key:'pork_floss',        label:'加肉鬆',           price:15 },
+    { type:'toggle', key:'tuna',              label:'加鮪魚',           price:15 },
+    { type:'toggle', key:'beef_patty',        label:'加漢堡肉',         price:20 },
+    { type:'toggle', key:'mc_chicken',        label:'加麥香雞',         price:20 },
+    { type:'toggle', key:'bacon',             label:'加培根',           price:25 },
+    { type:'toggle', key:'loin',              label:'加里肌肉',         price:30 },
+    { type:'toggle', key:'kara_plain',        label:'加原味卡拉雞腿',   price:45 },
+    { type:'toggle', key:'kara_spicy',        label:'加辣味卡拉雞腿',   price:45 },
   ],
 
   omelet: [
-    { type:'toggle', key:'cheese', label:'加起司', price:10 },
+    { type:'toggle', key:'cheese',     label:'加起司', price:10 },
+    { type:'toggle', key:'double_egg', label:'雙蛋',   price:15 },
+    { type:'toggle', key:'ham',               label:'加火腿',           price:15 },
+    { type:'toggle', key:'pork_floss',        label:'加肉鬆',           price:15 },
+    { type:'toggle', key:'tuna',              label:'加鮪魚',           price:15 },
+    { type:'toggle', key:'beef_patty',        label:'加漢堡肉',         price:20 },
+    { type:'toggle', key:'mc_chicken',        label:'加麥香雞',         price:20 },
+    { type:'toggle', key:'bacon',             label:'加培根',           price:25 },
+    { type:'toggle', key:'loin',              label:'加里肌肉',         price:30 },
+    { type:'toggle', key:'kara_plain',        label:'加原味卡拉雞腿',   price:45 },
+    { type:'toggle', key:'kara_spicy',        label:'加辣味卡拉雞腿',   price:45 },
   ],
 
   club: [
     { type:'toggle', key:'cheese', label:'加起司', price:10 },
+    { type:'toggle', key:'ham',               label:'加火腿',           price:15 },
+    { type:'toggle', key:'pork_floss',        label:'加肉鬆',           price:15 },
+    { type:'toggle', key:'tuna',              label:'加鮪魚',           price:15 },
+    { type:'toggle', key:'beef_patty',        label:'加漢堡肉',         price:20 },
+    { type:'toggle', key:'mc_chicken',        label:'加麥香雞',         price:20 },
+    { type:'toggle', key:'bacon',             label:'加培根',           price:25 },
+    { type:'toggle', key:'loin',              label:'加里肌肉',         price:30 },
+    { type:'toggle', key:'kara_plain',        label:'加原味卡拉雞腿',   price:45 },
+    { type:'toggle', key:'kara_spicy',        label:'加辣味卡拉雞腿',   price:45 },
   ],
 
   custom: [
     { type:'choice', key:'bread', label:'麵包體', options:[
-      { label:'帕瑪森', value:'帕瑪森', price:0 },
-      { label:'捲餅',   value:'捲餅',   price:0 },
-      { label:'香頌',   value:'香頌',   price:0 },
+      { label:'帕瑪森', value:'帕瑪森', price:10 },
+      { label:'捲餅',   value:'捲餅',   price:5 },
+      { label:'香頌',   value:'香頌',   price:5 },
       { label:'燒餅',   value:'燒餅',   price:0 },
     ]},
     { type:'toggle', key:'egg',    label:'加蛋',   price:15 },
     { type:'toggle', key:'cheese', label:'加起司', price:10 },
+    { type:'toggle', key:'ham',               label:'加火腿',           price:15 },
+    { type:'toggle', key:'pork_floss',        label:'加肉鬆',           price:15 },
+    { type:'toggle', key:'tuna',              label:'加鮪魚',           price:15 },
+    { type:'toggle', key:'beef_patty',        label:'加漢堡肉',         price:20 },
+    { type:'toggle', key:'mc_chicken',        label:'加麥香雞',         price:20 },
+    { type:'toggle', key:'bacon',             label:'加培根',           price:25 },
+    { type:'toggle', key:'loin',              label:'加里肌肉',         price:30 },
+    { type:'toggle', key:'kara_plain',        label:'加原味卡拉雞腿',   price:45 },
+    { type:'toggle', key:'kara_spicy',        label:'加辣味卡拉雞腿',   price:45 },
   ],
+
+  
   hotpot: [
     { type:'toggle', key:'cheese', label:'加起司', price:10 },
     { type:'toggle', key:'shacha', label:'加沙茶', price:10 },
@@ -480,7 +528,7 @@ const MENU = {
 
   /* ★補回店長推薦 */
   special: [
-    { id:"sp_egg_salad",     name:"雞蛋沙拉",   price:65 },
+    { id:"sp_egg_salad",     name:"雞蛋生菜沙拉",   price:65 },
     { id:"sp_fries",         name:"脆薯",       price:40 },
     { id:"sp_garlic_bread",  name:"香蒜麵包",   price:35 },
     { id:"sp_nuggets",       name:"雞塊",       price:35 },
@@ -491,6 +539,9 @@ const MENU = {
   custom: [
     { id:"custom_parmesan_hchicken",     name:"哈辣雞腿",   price:80 },
     { id:"custom_parmesan_sausage",      name:"德式香腸",   price:80 },
+    { id:"custom_parmesan_karla",        name:"卡拉蛋餅（原味）", price:90 },
+    { id:"custom_parmesan_karla_sp",     name:"卡拉蛋餅（辣味）", price:90 },
+    { id:"custom_parmesan_filit",        name:"菲力雞排",   price:90 },
     { id:"custom_parmesan_cheesechicken",name:"起司雞排",   price:75 },
     { id:"custom_parmesan_italian",      name:"義式雞",     price:75 },
     { id:"custom_parmesan_loin",         name:"嫩煎里肌",   price:75 },
@@ -861,16 +912,30 @@ function calcSizeExtraForDrink(drinkId, sizeCode){
   return extra;
 }
 
+// 針對特定品項的額外選項
+const ITEM_OPTION_RULES = {
+  toast_egg_salad: [
+    { type:'toggle', key:'extra_egg', label:'加蛋', price:15 },
+  ],
+  toast_mash_salad: [
+    { type:'toggle', key:'extra_egg', label:'加蛋', price:15 },
+  ],
+};
+
 /* === 一般類（漢堡/吐司/蛋餅/總匯/客製） === */
 function buildOptionControls(catKey){
   const root = el('#pmOptions'); root.innerHTML = '';
-  const itemId = currentItem?.id || '';  // ★ 新增：抓目前品項 id
-    // ★ 升級套餐選項：非套餐/飲料/研磨咖啡才顯示
-  
+  const itemId = currentItem?.id || '';
 
-  // ★ 若是焗烤吐司三款，直接不顯示任何選項
+  // 焗烤吐司三款：不顯示選項
   if (['toast_bacon_bake','toast_tuna_bake','toast_ham_bake'].includes(itemId)) return;
-  const rules = CATEGORY_OPTION_RULES[catKey] || [];
+
+  // 基礎分類規則 + 特定品項規則
+  const baseRules  = CATEGORY_OPTION_RULES[catKey] || [];
+  const extraRules = ITEM_OPTION_RULES[itemId] || [];
+  const rules = [...baseRules, ...extraRules];
+
+  // 下面維持原本的 rules.forEach(...) 繼續渲染
   rules.forEach(rule=>{
     if (rule.type === 'toggle'){
       const id = `opt_${rule.key}`;
@@ -970,7 +1035,7 @@ function buildOptionControls(catKey){
 // 果醬吐司（基價 20）：香蒜 +5 其餘 +0
 const JAM_FLAVORS = [
   { value:"草莓", add:0 }, { value:"奶酥", add:0 }, { value:"巧克力", add:0 },
-  { value:"奶油", add:0 }, { value:"花生", add:0 }, { value:"香蒜", add:5 },
+  { value:"奶油", add:0 }, { value:"花生", add:0 }, { value:"香蒜", add:5 },{ value:"煉乳", add:10 },
 ];
 
 // 厚片吐司（基價 30）：香蒜 +5；可可/抹茶/牛奶 +10；其餘 +0
@@ -985,7 +1050,6 @@ function buildToastSeriesControls(series){ // series: 'jam' | 'thick'
   root.innerHTML = '';
   const list = series === 'jam' ? JAM_FLAVORS : THICK_FLAVORS;
 
-  // 口味選項
   const options = list.map(f=>`<option value="${f.value}" data-add="${f.add}">
     ${f.value}${f.add?`（+${f.add}）`:''}
   </option>`).join('');
@@ -1000,16 +1064,24 @@ function buildToastSeriesControls(series){ // series: 'jam' | 'thick'
     </div>
   `);
 
-  // ★ 如果是果醬系列，額外提供「換鬆餅 +15」
   if (series === 'jam') {
+    // 換鬆餅 +15
     root.insertAdjacentHTML('beforeend', `
       <label class="flex items-center gap-3 border rounded-xl px-3 py-2">
         <input id="opt_toast_waffle" type="checkbox" data-opt-type="toggle" data-key="waffle" data-price="15">
         <span>換鬆餅（+15）</span>
       </label>
     `);
+    // ★ 新增：加厚 +10
+    root.insertAdjacentHTML('beforeend', `
+      <label class="flex items-center gap-3 border rounded-xl px-3 py-2">
+        <input id="opt_toast_thickup" type="checkbox" data-opt-type="toggle" data-key="thickup" data-price="10">
+        <span>加厚（+10）</span>
+      </label>
+    `);
   }
 }
+
 
 
 /* === 飲料：杯型/冰熱（依 DRINKS_META 決定可選與加價） === */
@@ -1246,6 +1318,12 @@ function readSelectionsFor(item){
     if (waffle?.checked){
       delta += Number(waffle.dataset.price || 0);
       parts.push('換鬆餅');
+    }
+    // ★ 新增：加厚（jam 專用）
+    const thickup = el('#opt_toast_thickup');
+    if (thickup?.checked){
+      delta += Number(thickup.dataset.price || 0);
+      parts.push('加厚');
     }
     return { optionDelta: delta, optionSummary: parts.join('｜') };
   }
