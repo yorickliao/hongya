@@ -803,11 +803,15 @@ const THICK_FLAVORS = [
 ];
 // 共用的系列口味彈窗
 function buildToastSeriesControls(series){ // series: 'jam' | 'thick'
-  const root = el('#pmOptions'); root.innerHTML = '';
+  const root = el('#pmOptions'); 
+  root.innerHTML = '';
   const list = series === 'jam' ? JAM_FLAVORS : THICK_FLAVORS;
+
+  // 口味選項
   const options = list.map(f=>`<option value="${f.value}" data-add="${f.add}">
     ${f.value}${f.add?`（+${f.add}）`:''}
   </option>`).join('');
+
   root.insertAdjacentHTML('beforeend', `
     <div>
       <label class="text-sm text-slate-600">口味</label>
@@ -817,7 +821,18 @@ function buildToastSeriesControls(series){ // series: 'jam' | 'thick'
       </select>
     </div>
   `);
+
+  // ★ 如果是果醬系列，額外提供「換鬆餅 +15」
+  if (series === 'jam') {
+    root.insertAdjacentHTML('beforeend', `
+      <label class="flex items-center gap-3 border rounded-xl px-3 py-2">
+        <input id="opt_toast_waffle" type="checkbox" data-opt-type="toggle" data-key="waffle" data-price="15">
+        <span>換鬆餅（+15）</span>
+      </label>
+    `);
+  }
 }
+
 
 /* === 飲料：杯型/冰熱（依 DRINKS_META 決定可選與加價） === */
 function buildDrinkControls(item, containerSel='#pmOptions'){
@@ -1048,8 +1063,15 @@ function readSelectionsFor(item){
       delta += Number(opt.dataset.add || 0);
       parts.push('口味：' + opt.value);
     }
+    // ★ 讀取「換鬆餅」選項
+    const waffle = el('#opt_toast_waffle');
+    if (waffle?.checked){
+      delta += Number(waffle.dataset.price || 0);
+      parts.push('換鬆餅');
+    }
     return { optionDelta: delta, optionSummary: parts.join('｜') };
   }
+
 
   // 一般類（漢堡/吐司/蛋餅/總匯/客製）
   const rules = CATEGORY_OPTION_RULES[item._catKey] || [];
