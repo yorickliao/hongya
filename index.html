@@ -334,12 +334,12 @@ const CATEGORY_OPTION_RULES = {
   snacks: [],
 
   burger: [
-    { type:'toggle', key:'egg',    label:'加蛋',   price:15 },
-    { type:'toggle', key:'cheese', label:'加起司', price:10 },
     { type:'choice', key:'bread',  label:'麵包',   options:[
       { label:'漢堡', value:'漢堡', price:0 },
       { label:'圓形帕瑪森',       value:'圓形帕瑪森', price:10 },
     ]},
+    { type:'toggle', key:'egg',    label:'加蛋',   price:15 },
+    { type:'toggle', key:'cheese', label:'加起司', price:10 },
     { type:'toggle', key:'ham',               label:'加火腿',           price:15 },
     { type:'toggle', key:'pork_floss',        label:'加肉鬆',           price:15 },
     { type:'toggle', key:'tuna',              label:'加鮪魚',           price:15 },
@@ -539,8 +539,8 @@ const MENU = {
   custom: [
     { id:"custom_parmesan_hchicken",     name:"哈辣雞腿",   price:80 },
     { id:"custom_parmesan_sausage",      name:"德式香腸",   price:80 },
-    { id:"custom_parmesan_karla",        name:"卡拉蛋餅（原味）", price:90 },
-    { id:"custom_parmesan_karla_sp",     name:"卡拉蛋餅（辣味）", price:90 },
+    { id:"custom_parmesan_karla",        name:"卡拉雞腿（原味）", price:90 },
+    { id:"custom_parmesan_karla_sp",     name:"卡拉雞腿（辣味）", price:90 },
     { id:"custom_parmesan_filit",        name:"菲力雞排",   price:90 },
     { id:"custom_parmesan_cheesechicken",name:"起司雞排",   price:75 },
     { id:"custom_parmesan_italian",      name:"義式雞",     price:75 },
@@ -572,6 +572,17 @@ const MENU = {
     { id:"snack_fries",                 name:"薯條",                price:30 },
     { id:"snack_hotdog",                name:"熱狗",                price:25 },
     { id:"snack_fried_egg",             name:"荷包蛋",              price:15 },
+    { id:"snack_corn_egg",        name:"玉米散蛋",            price:25 },
+    { id:"snack_cheese_egg",      name:"起司散蛋",            price:25 },
+    { id:"snack_hotdog_toast",    name:"熱狗捲蛋吐司",        price:25 },
+    { id:"snack_egg_salad",       name:"雞蛋沙拉單點（2入）", price:30 },
+    { id:"snack_ham",             name:"火腿",                price:15 },
+    { id:"snack_beef_patty",      name:"漢堡肉",              price:20 },
+    { id:"snack_mc_chicken",      name:"麥香雞",              price:20 },
+    { id:"snack_bacon",           name:"培根",                price:25 },
+    { id:"snack_loin",            name:"里肌肉",              price:30 },
+    { id:"snack_kara_plain",      name:"原味卡拉雞腿",        price:45 },
+    { id:"snack_kara_spicy",      name:"辣味卡拉雞腿",        price:45 },
   ],
 
     /* 鍋燒系列 */
@@ -919,6 +930,14 @@ const ITEM_OPTION_RULES = {
   ],
   toast_mash_salad: [
     { type:'toggle', key:'extra_egg', label:'加蛋', price:15 },
+  ],
+  snack_fried_egg: [
+    {
+      type: 'choice', key: 'doneness', label: '熟度', options: [
+        { label: '全熟', value: 'well_done', price: 0 },
+        { label: '半熟', value: 'soft_yolk', price: 0 },
+      ],
+    },
   ],
 };
 
