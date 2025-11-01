@@ -517,7 +517,7 @@ const MENU = {
     { id:"drink_black_tea",       name:"紅茶",           price:15 },
     { id:"drink_milk_tea",        name:"奶茶",           price:20 },
     { id:"drink_soy_milk",        name:"豆漿",           price:20 },
-    { id:"drink_soy_milk",        name:"無糖豆漿",        price:20 },
+    { id:"drink_soy_milk_ns",     name:"無糖豆漿",        price:20 },
     { id:"drink_barley_milk",     name:"薏仁漿",         price:20 },
     { id:"drink_rice_milk",       name:"米漿",           price:20 },
     { id:"drink_orange_juice",    name:"柳橙汁",         price:30 }, // only 冰
@@ -547,10 +547,13 @@ const MENU = {
 */
 const DRINKS_META = {
   drink_black_tea:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
-  drink_milk_tea:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
-  drink_soy_milk:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
-  drink_barley_milk:      { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
-  drink_rice_milk:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
+  drink_soy_milk:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
+  drink_unsweet_soy_milk: { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
+  drink_milk_tea:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
+  drink_barley_milk:      { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
+  drink_rice_milk:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
+
+  
   drink_orange_juice:     { baseSize:'M', sizes:['M','L','XL'], temps:['ice']      }, // 只有冰
   drink_cranberry_juice:  { baseSize:'M', sizes:['M','L','XL'], temps:['ice']      }, // 只有冰
   drink_fresh_milk_tea:   { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] },
@@ -820,6 +823,7 @@ function buildDrinkControls(item, containerSel='#pmOptions'){
     let extra = 0;
     if (meta.baseSize === 'M') extra = (sz==='L'?5:(sz==='XL'?10:0));
     if (meta.baseSize === 'L') extra = (sz==='XL'?10:0);
+    if (meta.xlExtra && sz==='XL') extra = meta.xlExtra;
     const text = sz==='M'?'中':(sz==='L'?'大':'特大');
     return `<option value="${sz}" data-extra="${extra}">${text}${extra?`（+${extra}）`:''}</option>`;
   }).join('');
