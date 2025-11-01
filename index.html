@@ -820,7 +820,7 @@ function renderUpgradeDrinkSelect(containerId, selectId, planKey){
   const area = document.getElementById(containerId);
   if (!area) return;
 
-  // 59 方案顯示「加價 -5」（僅顯示用；實際計價仍用最終價-20）
+  // 59 方案顯示加價 -5（僅顯示用）
   const showOffset = (planKey === '59_tempura_milk') ? -5 : 0;
 
   const options = SETMEAL_DRINKS.map(d => {
@@ -840,22 +840,40 @@ function renderUpgradeDrinkSelect(containerId, selectId, planKey){
       <div id="${selectId}_opts" class="mt-3"></div>
     </div>`;
 
-  // 預設選第一個
   const sel = area.querySelector(`#${selectId}`);
   if (sel && sel.options.length) sel.selectedIndex = 0;
+
+  // ★ 下拉本身改變 → 會重建杯型區，同時也先刷新一次小計
+  sel?.addEventListener('change', () => {
+    document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
+  });
+
   return sel;
 }
 
 
 
-// 封裝：根據選定飲料，渲染杯型/冰熱（沿用 buildDrinkControls）
+
+// 依方案限制可選尺寸：39/49 紅茶禁 M；59 紅/奶茶禁 M（保留 L/XL）
+function allowedSizesForPlan(planKey, drinkId){
+  const base = (DRINKS_META[drinkId]?.sizes || ['M','L','XL']).slice();
+  const isBlack = drinkId === 'drink_black_tea';
+  const isMilk  = drinkId === 'drink_milk_tea';
+  if (planKey === '59_tempura_milk'){
+    if (isBlack || isMilk) return base.filter(s => s !== 'M');
+  } else {
+    if (isBlack) return base.filter(s => s !== 'M');
+  }
+  return base;
+}
+
 function mountUpgradeDrinkOptions(selectEl, planKey){
-  const chosenId = selectEl.value;
+  const chosenId   = selectEl.value;
   const optsWrapId = `${selectEl.id}_opts`;
   const wrap = document.getElementById(optsWrapId);
   if (!wrap) return;
 
-  // 臨時覆寫 sizes → 呼叫既有 buildDrinkControls → 馬上還原
+  // 臨時覆寫 sizes → 渲染 → 還原
   const origMeta = DRINKS_META[chosenId] ? { ...DRINKS_META[chosenId] } : null;
   const filtered = allowedSizesForPlan(planKey, chosenId);
   if (DRINKS_META[chosenId]) DRINKS_META[chosenId] = { ...DRINKS_META[chosenId], sizes: filtered };
@@ -864,24 +882,36 @@ function mountUpgradeDrinkOptions(selectEl, planKey){
   const tmpItem = { id: chosenId, _catKey: 'drinks' };
   buildDrinkControls(tmpItem, `#${optsWrapId}`);
 
-  // 如果 M 被移除，確保選到 L 或 XL
+  // 若 M 被禁，確保預設落在 L/XL
   const sizeSel = document.getElementById('opt_drink_size');
   if (sizeSel && sizeSel.options.length){
     const cur = sizeSel.value;
     if (!filtered.includes(cur)){
-      sizeSel.value = filtered[0]; // 例如 L
+      sizeSel.value = filtered[0];
     }
   }
 
-  // 監聽下拉改變 → 重新套用限制並重建
-  selectEl.onchange = () => mountUpgradeDrinkOptions(selectEl, planKey);
+  // ★ 對杯型/冰熱變動綁定小計刷新
+  const tempSel = document.getElementById('opt_drink_temp');
+  sizeSel?.addEventListener('change', () => {
+    document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
+  });
+  tempSel?.addEventListener('change', () => {
+    document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
+  });
 
-  // 觸發小計刷新
+  // 下拉改飲料 → 重新掛限制並刷新
+  selectEl.onchange = () => {
+    mountUpgradeDrinkOptions(selectEl, planKey);
+    document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
+  };
+
+  // 首次渲染也先刷新一次（套入預設尺寸的價差）
   document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
 
-  // 還原 meta
   if (origMeta) DRINKS_META[chosenId] = origMeta;
 }
+
 
 // 取得飲料基價（以 MENU.drinks 裡的 price 為準）
 const MENU_DRINK_PRICE = Object.fromEntries((MENU.drinks||[]).map(d => [d.id, Number(d.price||0)]));
@@ -973,13 +1003,14 @@ function buildOptionControls(catKey){
     const radios = Array.from(document.querySelectorAll('input[name="upgradeMeal"]'));
     
     const handleUpgradeChange = () => {
-      const sel = document.querySelector('input[name="upgradeMeal"]:checked');
+      const sel  = document.querySelector('input[name="upgradeMeal"]:checked');
       const area = document.getElementById(areaId);
       if (!sel || !area) return;
     
       if (!sel.value) {
         area.classList.add('hidden');
         area.innerHTML = '';
+        // 只選「不升級」也要刷新小計（把方案價清掉）
         document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
         return;
       }
@@ -989,9 +1020,13 @@ function buildOptionControls(catKey){
     
       const drinkSelect = renderUpgradeDrinkSelect(areaId, selectId, planKey);
       if (drinkSelect) mountUpgradeDrinkOptions(drinkSelect, planKey);
+    
+      // ★ 重要：選到方案就先刷新一次（即使還沒換飲料/調尺寸，小計也會包含方案價 39/49/59）
+      document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
     };
     
     radios.forEach(r => r.addEventListener('change', handleUpgradeChange));
+
 
   }
 
