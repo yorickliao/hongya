@@ -516,6 +516,8 @@ const MENU = {
   drinks: [
     { id:"drink_black_tea",       name:"紅茶",           price:15 },
     { id:"drink_milk_tea",        name:"奶茶",           price:20 },
+    { id:"drink_green_tea",       name:"無糖綠茶",       price:15 },
+    { id:"drink_wintermelon_tea", name:"冬瓜茶",         price:25 },
     { id:"drink_soy_milk",        name:"豆漿",           price:20 },
     { id:"drink_soy_milk_ns",     name:"無糖豆漿",        price:20 },
     { id:"drink_barley_milk",     name:"薏仁漿",         price:20 },
@@ -552,6 +554,8 @@ const DRINKS_META = {
   drink_milk_tea:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
   drink_barley_milk:      { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
   drink_rice_milk:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
+  drink_green_tea:       { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot']},
+  drink_wintermelon_tea: { baseSize:'L', sizes:['L','XL'], temps:['ice','hot'], xlExtra:5 },
 
   
   drink_orange_juice:     { baseSize:'M', sizes:['M','L','XL'], temps:['ice']      }, // 只有冰
@@ -568,6 +572,8 @@ const DRINKS_META = {
 const SETMEAL_DRINKS = [
   { id:'drink_black_tea',        label:'紅茶',        add:0  },
   { id:'drink_milk_tea',         label:'奶茶',        add:5  },
+  { id:'drink_green_tea',        label:'無糖綠茶',    add:0  },
+  { id:'drink_wintermelon_tea',  label:'冬瓜茶',      add:5  },
   { id:'drink_soy_milk',         label:'豆漿',        add:5  },
   { id:'drink_soy_milk_ns',      label:'無糖豆漿',     add:5  },
   { id:'drink_barley_milk',      label:'薏仁漿',      add:5  },
