@@ -106,7 +106,7 @@
     <div class="cat-wrap cat-a">
       <div class="cat-header">
         <span class="cat-swatch"></span>
-        <h2 class="text-lg font-semibold flex items-center gap-2">套餐 (均附中杯紅茶，可折抵其他飲品或濃湯）</h2>
+        <h2 class="text-lg font-semibold flex items-center gap-2">套餐 (均附小杯紅茶，可折抵其他飲品或濃湯）</h2>
       </div>
       <div id="setmealList" class="grid grid-cols-2 gap-4"></div>
     </div>
@@ -569,6 +569,7 @@ const SETMEAL_DRINKS = [
   { id:'drink_black_tea',        label:'紅茶',        add:0  },
   { id:'drink_milk_tea',         label:'奶茶',        add:5  },
   { id:'drink_soy_milk',         label:'豆漿',        add:5  },
+  { id:'drink_soy_milk_ns',      label:'無糖豆漿',     add:5  },
   { id:'drink_barley_milk',      label:'薏仁漿',      add:5  },
   { id:'drink_rice_milk',        label:'米漿',        add:5  },
   { id:'drink_orange_juice',     label:'柳橙汁',      add:15  },  // 只供冰
@@ -824,7 +825,7 @@ function buildDrinkControls(item, containerSel='#pmOptions'){
     if (meta.baseSize === 'M') extra = (sz==='L'?5:(sz==='XL'?10:0));
     if (meta.baseSize === 'L') extra = (sz==='XL'?10:0);
     if (meta.xlExtra && sz==='XL') extra = meta.xlExtra;
-    const text = sz==='M'?'中':(sz==='L'?'大':'特大');
+    const text = sz==='M'?'小':(sz==='L'?'中':'大');
     return `<option value="${sz}" data-extra="${extra}">${text}${extra?`（+${extra}）`:''}</option>`;
   }).join('');
 
