@@ -791,6 +791,32 @@ function ensureItemModal(){
 function buildOptionControls(catKey){
   const root = el('#pmOptions'); root.innerHTML = '';
   const itemId = currentItem?.id || '';  // ★ 新增：抓目前品項 id
+    // ★ 升級套餐選項：非套餐/飲料/研磨咖啡才顯示
+  if (!['setmeal','drinks','coffee'].includes(catKey)) {
+    root.insertAdjacentHTML('beforeend', `
+      <div class="border rounded-xl">
+        <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">升級套餐</div>
+        <div class="divide-y">
+          <label class="flex items-center justify-between px-3 py-2">
+            <span>+39 熱狗＋中杯紅茶</span>
+            <input type="radio" name="upgradeMeal" value="39_hotdog_tea" data-add="39" data-desc="熱狗＋中杯紅茶">
+          </label>
+          <label class="flex items-center justify-between px-3 py-2">
+            <span>+49 香蒜麵包＋中杯紅茶</span>
+            <input type="radio" name="upgradeMeal" value="49_garlicbread_tea" data-add="49" data-desc="香蒜麵包＋中杯紅茶">
+          </label>
+          <label class="flex items-center justify-between px-3 py-2">
+            <span>+59 甜不辣＋中杯奶茶</span>
+            <input type="radio" name="upgradeMeal" value="59_tempura_milk" data-add="59" data-desc="甜不辣＋中杯奶茶">
+          </label>
+          <label class="flex items-center justify-between px-3 py-2">
+            <span>不升級</span>
+            <input type="radio" name="upgradeMeal" value="" data-add="0" checked>
+          </label>
+        </div>
+      </div>
+    `);
+  }
 
   // ★ 若是焗烤吐司三款，直接不顯示任何選項
   if (['toast_bacon_bake','toast_tuna_bake','toast_ham_bake'].includes(itemId)) return;
@@ -1126,6 +1152,13 @@ function readSelectionsFor(item){
       }
     }
   });
+
+  // ★ 升級套餐加價
+  const upgrade = document.querySelector('input[name="upgradeMeal"]:checked');
+  if (upgrade && Number(upgrade.dataset.add) > 0) {
+    delta += Number(upgrade.dataset.add);
+    parts.push('升級：' + upgrade.dataset.desc);
+  }
   return { optionDelta: delta, optionSummary: parts.join('｜') };
 }
 function calcUnitPrice(item){
