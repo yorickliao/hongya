@@ -795,24 +795,53 @@ const UPGRADE_PLANS = {
 
 // 由 SETMEAL_DRINKS 取得「相對小杯紅茶」的加價表與顯示名
 const DRINK_ADD_MAP = Object.fromEntries(SETMEAL_DRINKS.map(d => [d.id, Number(d.add||0)]));
-const DRINK_LABEL_MAP = Object.fromEntries(SETMEAL_DRINKS.map(d => [d.id, d.label || '']));
+// 由 SETMEAL_DRINKS 取得顯示名（若你已刪 DRINK_LABEL_MAP）
+const getDrinkLabel = id => (SETMEAL_DRINKS.find(d=>d.id===id)?.label) || '';
 
-// 封裝：建立可選飲料下拉（用套餐飲料清單）
-function renderUpgradeDrinkSelect(containerId, selectId){
+// 重新實作：依方案過濾可選飲料，並調整顯示加價（59 方案顯示 -5）
+function renderUpgradeDrinkSelect(containerId, selectId, planKey){
   const area = document.getElementById(containerId);
   if (!area) return;
-  const options = SETMEAL_DRINKS.map(d => `<option value="${d.id}">${d.label}${d.add?`（+${d.add}）`:''}</option>`).join('');
+
+  // 需要排除的品項
+  const exclude = new Set();
+  if (planKey === '59_tempura_milk') {
+    exclude.add('drink_black_tea');
+    exclude.add('drink_milk_tea');
+  } else {
+    // 39/49 方案
+    exclude.add('drink_black_tea');
+  }
+
+  // 59 方案顯示加價需 -5；其餘照原本
+  const showOffset = (planKey === '59_tempura_milk') ? -5 : 0;
+
+  // 產生 option（只處理顯示文字；定價仍依 readSelectionsFor 的公式）
+  const options = SETMEAL_DRINKS
+    .filter(d => !exclude.has(d.id))
+    .map(d => {
+      const raw = Number(d.add || 0);
+      const disp = Math.max(0, raw + showOffset); // 顯示減 5（但不出現負數）
+      const suffix = disp > 0 ? `（+${disp}）` : '';
+      return `<option value="${d.id}">${getDrinkLabel(d.id)}${suffix}</option>`;
+    }).join('');
+
   area.innerHTML = `
     <div class="p-3 border-t">
       <label class="text-sm text-slate-600">升級飲料</label>
       <select id="${selectId}"
-              class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"></select>
+              class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900">
+        ${options}
+      </select>
       <div id="${selectId}_opts" class="mt-3"></div>
     </div>`;
+
   const sel = area.querySelector(`#${selectId}`);
-  sel.innerHTML = options;
+  // 預設選列表第一個（不要再預選紅茶/奶茶，因為有可能被排除）
+  if (sel && sel.options.length) sel.selectedIndex = 0;
   return sel;
 }
+
 
 // 封裝：根據選定飲料，渲染杯型/冰熱（沿用 buildDrinkControls）
 function mountUpgradeDrinkOptions(selectEl){
@@ -917,22 +946,29 @@ function buildOptionControls(catKey){
     const areaId = 'upgradeDrinkArea';
     const selectId = 'upgradeDrinkSelect';
     const radios = Array.from(document.querySelectorAll('input[name="upgradeMeal"]'));
+    
     const handleUpgradeChange = () => {
       const sel = document.querySelector('input[name="upgradeMeal"]:checked');
       const area = document.getElementById(areaId);
       if (!sel || !area) return;
-      if (!sel.value) { area.classList.add('hidden'); area.innerHTML = ''; el('#pmOptions')?.dispatchEvent(new Event('change')); return; }
-      area.classList.remove('hidden');
-      const drinkSelect = renderUpgradeDrinkSelect(areaId, selectId);
-      // 預選：若方案基準是紅茶，預設紅茶；若是奶茶，預設奶茶
-      if (sel.value === '59_tempura_milk') {
-        drinkSelect.value = 'drink_milk_tea';
-      } else {
-        drinkSelect.value = 'drink_black_tea';
+    
+      if (!sel.value) {
+        area.classList.add('hidden');
+        area.innerHTML = '';
+        document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
+        return;
       }
-      mountUpgradeDrinkOptions(drinkSelect);
+    
+      area.classList.remove('hidden');
+    
+      // 將方案 key 傳入，做過濾與顯示調整
+      const drinkSelect = renderUpgradeDrinkSelect(areaId, selectId, sel.value);
+      // 渲染杯型/冰熱
+      if (drinkSelect) mountUpgradeDrinkOptions(drinkSelect);
     };
+    
     radios.forEach(r => r.addEventListener('change', handleUpgradeChange));
+
   }
 
 }
