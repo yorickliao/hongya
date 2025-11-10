@@ -377,17 +377,17 @@ function renderCards(){
 
     html += `
     <div class="card ${o.diningType==='dinein'?'dinein':'takeout'} text-sm leading-snug">
-      <h3 class="text-3xl font-semibold">訂單編號: #${o.pickupNo}</h3>
+      <h3 class="text-xl font-semibold">訂單編號: #${o.pickupNo}</h3>
       <div class="border-t border-b my-2 py-2">
-        <p class="text-xl">${o.diningType==='dinein'?'內用':'外帶'}</p>
-        <p class="text-xl">${pickupInfo}</p>
-        <p class="text-xl">姓名: ${o.name} | 電話: ${o.phone}</p>
+        <p class="text-base">${o.diningType==='dinein'?'內用':'外帶'}</p>
+        <p class="text-base">${pickupInfo}</p>
+        <p class="text-base">姓名: ${o.name} | 電話: ${o.phone}</p>
       </div>
       <div class="border-t border-b my-2 py-2">
-        <p class="text-xl">餐點: <br> ${itemsList}</p>
+        <p class="text-base">餐點: <br> ${itemsList}</p>
       </div>
       <div class="text-right flex items-center justify-end gap-4">
-        <span class="text-xl font-semibold">總計: $${o.total}</span>
+        <span class="text-base font-semibold">總計: $${o.total}</span>
         <button class="chkbtn" data-id="${o.id}" data-next="1" aria-pressed="false" aria-busy="false">
           <span class="state-default inline-flex items-center gap-2">
             <span class="box">
