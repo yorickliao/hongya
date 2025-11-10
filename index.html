@@ -966,6 +966,30 @@ const ITEM_OPTION_RULES = {
     { type:'toggle', key:'remove_veg',  label:'不加菜',           price:0 },
     { type:'toggle', key:'remove_sauce',label:'不加醬',           price:0 },
   ],
+  // ★ 奶茶／鮮奶茶：甜度選項
+  drink_milk_tea: [
+    {
+      type: 'choice',
+      key: 'sweetness',
+      label: '甜度',
+      options: [
+        { label: '正常糖', value: 'normal', price: 0 },
+        { label: '無糖',   value: 'unsweet', price: 0 },
+      ],
+    },
+  ],
+  drink_fresh_milk_tea: [
+    {
+      type: 'choice',
+      key: 'sweetness',
+      label: '甜度',
+      options: [
+        { label: '正常糖', value: 'normal', price: 0 },
+        { label: '無糖',   value: 'unsweet', price: 0 },
+      ],
+    },
+  ],
+
 
 };
 
