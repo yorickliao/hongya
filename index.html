@@ -1032,9 +1032,9 @@ function buildOptionControls(catKey){
       `);
     } else if (rule.type === 'choice'){
       const id = `opt_${rule.key}`;
-      const opts = (rule.options||[]).map(o =>
-      `<option value="${o.value}" data-price="${o.price||0}">${o.label}${o.price?`（+${o.price}）`:''}</option>`
-    ).join('');
+      const opts = (rule.options || []).map(o =>
+        `<option value="${o.value}" data-price="${o.price || 0}">${o.label}${o.price ? `（+${o.price}）` : ''}</option>`
+      ).join('');
 
       root.insertAdjacentHTML('beforeend', `
         <div>
@@ -1422,16 +1422,18 @@ function readSelectionsFor(item){
           delta += p;
           parts.push(rule.label);
         }
-      } else if (rule.type === 'choice') {
+      } else if (rule.type === 'choice'){
         const sel = el(`#opt_${rule.key}`);
         const opt = sel?.selectedOptions?.[0];
-        if (opt) {
-          const labelText = rule.label + '：' + opt.textContent.replace(/（\+\d+）$/, '');
+        if (opt){
+          const text = opt.textContent.trim().replace(/（\+\d+）$/, '');
+          const label = rule.label + '：' + text;
           const p = Number(opt.dataset.price || 0);
           delta += p;
-          parts.push(labelText);
+          parts.push(label);
         }
       }
+
     });
   
     return { optionDelta: delta, optionSummary: parts.join('｜') };
