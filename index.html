@@ -982,7 +982,23 @@ function buildOptionControls(catKey){
   const extraRules = ITEM_OPTION_RULES[itemId] || [];
   const rules = [...baseRules, ...extraRules];
 
-  // 下面維持原本的 rules.forEach(...) 繼續渲染
+  // === 不加蛋例外名單 ===
+  const REMOVE_EGG_EXCEPTIONS = [
+    'burg_placeholder',        // 美式奔牛堡
+    'burg_chicken_tender',     // 起飛嫩雞堡
+    'burg_double_pork_cheese', // 雙層豬肉起司堡
+    'burg_american_pork',      // 美式大豬堡
+    'toast_fried_pork',        // 炸豬排三明治
+    'toast_egg_salad',         // 雞蛋沙拉吐司
+    'toast_mash_salad',        // 薯泥沙拉吐司
+  ];
+
+  // 如果是例外品項 → 移除「不加蛋」選項
+  if (REMOVE_EGG_EXCEPTIONS.includes(itemId)) {
+    rules = rules.filter(r => r.key !== 'remove_egg');
+  }
+
+  // === 渲染 ===
   rules.forEach(rule=>{
     if (rule.type === 'toggle'){
       const id = `opt_${rule.key}`;
@@ -994,11 +1010,15 @@ function buildOptionControls(catKey){
       `);
     } else if (rule.type === 'choice'){
       const id = `opt_${rule.key}`;
-      const opts = (rule.options||[]).map(o=>`<option value="${o.value}" data-price="${o.price||0}">${o.label}${o.price?`（+${o.price}）`:''}</option>`).join('');
+      const opts = (rule.options||[]).map(o=>`
+        <option value="${o.value}" data-price="${o.price||0}">
+          ${o.label}${o.price?`（+${o.price}）`:''}
+        </option>`).join('');
       root.insertAdjacentHTML('beforeend', `
         <div>
           <label class="text-sm text-slate-600">${rule.label}</label>
-          <select id="${id}" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
+          <select id="${id}"
+                  class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
                   data-opt-type="choice" data-key="${rule.key}">
             ${opts}
           </select>
