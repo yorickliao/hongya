@@ -980,7 +980,7 @@ function buildOptionControls(catKey){
   // 基礎分類規則 + 特定品項規則
   const baseRules  = CATEGORY_OPTION_RULES[catKey] || [];
   const extraRules = ITEM_OPTION_RULES[itemId] || [];
-  const rules = [...baseRules, ...extraRules];
+  let rules = [...baseRules, ...extraRules];
 
   // === 不加蛋例外名單 ===
   const REMOVE_EGG_EXCEPTIONS = [
