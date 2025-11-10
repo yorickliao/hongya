@@ -1755,6 +1755,22 @@ function hhmmFromISO(iso){
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
+/* === 小工具：顯示 YYYY-MM-DD HH:mm === */
+function ymdHmFromISO(iso){
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+
+  const y  = d.getFullYear();
+  const m  = pad2(d.getMonth() + 1);
+  const dd = pad2(d.getDate());
+  const hh = pad2(d.getHours());
+  const mm = pad2(d.getMinutes());
+
+  return `${y}-${m}-${dd} ${hh}:${mm}`;
+}
+
+
 /* === Submit === */
 async function onSubmitOrder(e) {
   e.preventDefault();
@@ -1820,7 +1836,7 @@ async function onSubmitOrder(e) {
     if (diningType === 'takeout') {
       el('#successTakeoutTime').classList.remove('hidden');
       el('#successTable').classList.add('hidden');
-      el('#pickupTimeText').textContent = hhmmFromISO(res.pickupTime ?? pickupAtHintISO ?? '');
+      el('#pickupTimeText').textContent = ymdHmFromISO(res.pickupTime ?? pickupAtHintISO ?? '');
     } else {
       el('#successTakeoutTime').classList.add('hidden');
       el('#successTable').classList.remove('hidden');
