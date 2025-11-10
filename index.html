@@ -348,6 +348,9 @@ const CATEGORY_OPTION_RULES = {
     { type:'toggle', key:'loin',              label:'加里肌肉',         price:30 },
     { type:'toggle', key:'kara_plain',        label:'加原味卡拉雞腿',   price:45 },
     { type:'toggle', key:'kara_spicy',        label:'加辣味卡拉雞腿',   price:45 },
+    { type:'toggle', key:'remove_egg',    label:'不加蛋',   price:-5 },
+    { type:'toggle', key:'remove_veg',    label:'不加菜',   price:0 },
+    { type:'toggle', key:'remove_sauce',    label:'不加醬',   price:0 },
   ],
 
   toast: [
@@ -362,6 +365,9 @@ const CATEGORY_OPTION_RULES = {
     { type:'toggle', key:'loin',              label:'加里肌肉',         price:30 },
     { type:'toggle', key:'kara_plain',        label:'加原味卡拉雞腿',   price:45 },
     { type:'toggle', key:'kara_spicy',        label:'加辣味卡拉雞腿',   price:45 },
+    { type:'toggle', key:'remove_egg',    label:'不加蛋',   price:-5 },
+    { type:'toggle', key:'remove_veg',    label:'不加菜',   price:0 },
+    { type:'toggle', key:'remove_sauce',    label:'不加醬',   price:0 },
   ],
 
   omelet: [
@@ -409,6 +415,8 @@ const CATEGORY_OPTION_RULES = {
     { type:'toggle', key:'loin',              label:'加里肌肉',         price:30 },
     { type:'toggle', key:'kara_plain',        label:'加原味卡拉雞腿',   price:45 },
     { type:'toggle', key:'kara_spicy',        label:'加辣味卡拉雞腿',   price:45 },
+    { type:'toggle', key:'remove_veg',    label:'不加菜',   price:0 },
+    { type:'toggle', key:'remove_sauce',    label:'不加醬',   price:0 },
   ],
 
   
@@ -444,6 +452,9 @@ const MENU = {
   ],
 
   burger: [
+    { id:"burg_placeholder",              name:"美式奔牛堡",     price:115 },
+    { id:"burg_chicken_tender",           name:"起飛嫩雞堡",   price:90 },
+    { id:"burg_double_pork_cheese",       name:"雙層豬肉起司堡", price:75 },
     { id:"burg_american_pork",            name:"美式大豬堡",        price:85 },
     { id:"burg_fillet_chicken_egg",       name:"菲力雞排蛋堡",      price:85 },
     { id:"burg_spicy_chicken_egg",        name:"卡拉雞腿蛋堡（原味）",       price:80 },
@@ -960,7 +971,7 @@ function buildOptionControls(catKey){
       root.insertAdjacentHTML('beforeend', `
         <label class="flex items-center gap-3 border rounded-xl px-3 py-2">
           <input id="${id}" type="checkbox" data-opt-type="toggle" data-key="${rule.key}" data-price="${rule.price||0}">
-          <span>${rule.label}${rule.price?`（+${rule.price}）`:''}</span>
+          <span>${rule.label}${rule.price? `（${rule.price > 0 ? '+' + rule.price : rule.price}）`:''}</span>
         </label>
       `);
     } else if (rule.type === 'choice'){
