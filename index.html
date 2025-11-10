@@ -1779,7 +1779,20 @@ async function onSubmitOrder(e) {
 
     const createdAt = new Date();
     const selectedPickupTime = pickupAtHintISO ? new Date(pickupAtHintISO) : createdAt;
-    if (selectedPickupTime < createdAt) { showErr('取餐時間不能早於訂單創建時間。'); return; }
+    
+    // 若為外帶且目前時間超過13:00，就不檢查「早於創建時間」
+    const nowHour = createdAt.getHours();
+    const nowMin = createdAt.getMinutes();
+    const nowTotalMin = nowHour * 60 + nowMin;
+    const endMin = 13 * 60; // 13:00
+    
+    if (!(diningType === 'takeout' && nowTotalMin >= endMin)) {
+      if (selectedPickupTime < createdAt) {
+        showErr('取餐時間不能早於訂單創建時間。');
+        return;
+      }
+    }
+
 
     const items = state.cart.map(e => {
       const optsPart   = e._optionText ? `｜${e._optionText}` : '';
