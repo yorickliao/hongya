@@ -1496,12 +1496,14 @@ function readSelectionsFor(item){
       const sel = el(`#opt_${rule.key}`);
       const opt = sel?.selectedOptions?.[0];
       if (opt){
-        const label = rule.label + '：' + opt.textContent.replace(/（\+\d+）$/, '');
-        const p = Number(opt.dataset.price||0);
+        const text  = opt.textContent.trim().replace(/（\+\d+）$/, '');
+        const label = rule.label + '：' + text;
+        const p = Number(opt.dataset.price || 0);
         delta += p;
         parts.push(label);
       }
     }
+
   });
 
   // ★ 升級套餐（預設「不換飲料」送中杯紅茶 / 中杯奶茶；若換其它或改變杯型/溫度 → 補最終價 − 基準(15/20)）
