@@ -1659,12 +1659,37 @@ function roundUpTo15min(date){
   return new Date(Math.ceil(date.getTime()/ms)*ms);
 }
 function chooseEarliestSlot(now = new Date()){
-  const earliest = roundUpTo15min(new Date(now.getTime() + BUSINESS.intervalMin*60000));
+  // 今天營業時段（05:30–13:00）
+  const todayStart = new Date(
+    now.getFullYear(), now.getMonth(), now.getDate(),
+    BUSINESS.startHour, 30, 0
+  );
+  const todayEnd = new Date(
+    now.getFullYear(), now.getMonth(), now.getDate(),
+    BUSINESS.endHour, 0, 0
+  );
+
+  // 若現在時間已經超過營業結束（13:00 之後）
+  // → 未指定時間的外帶，預設改成「隔天 05:30」
+  if (now > todayEnd) {
+    const tomorrow = new Date(
+      now.getFullYear(), now.getMonth(), now.getDate() + 1
+    );
+    return new Date(
+      tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(),
+      BUSINESS.startHour, 30, 0
+    ); // 隔天 05:30
+  }
+
+  // 其他情況（還在營業時段內）：維持原本邏輯
+  const earliest = roundUpTo15min(new Date(now.getTime() + BUSINESS.intervalMin * 60000));
   for (const s of state.slots){
     if (s.getTime() >= earliest.getTime()) return s;
   }
+  // 理論上不會進來，但保留原本的 fallback
   return state.slots[state.slots.length - 1] || null;
 }
+
 
 /* === Sold-out 狀態 === */
 let SOLDOUT_CACHE = { ts: 0, byName: new Map() };
