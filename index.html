@@ -1032,10 +1032,10 @@ function buildOptionControls(catKey){
       `);
     } else if (rule.type === 'choice'){
       const id = `opt_${rule.key}`;
-      const opts = (rule.options||[]).map(o=>`
-        <option value="${o.value}" data-price="${o.price||0}">
-          ${o.label}${o.price?`（+${o.price}）`:''}
-        </option>`).join('');
+      const opts = (rule.options||[]).map(o =>
+      `<option value="${o.value}" data-price="${o.price||0}">${o.label}${o.price?`（+${o.price}）`:''}</option>`
+    ).join('');
+
       root.insertAdjacentHTML('beforeend', `
         <div>
           <label class="text-sm text-slate-600">${rule.label}</label>
