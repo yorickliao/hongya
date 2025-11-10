@@ -989,8 +989,6 @@ const ITEM_OPTION_RULES = {
       ],
     },
   ],
-
-
 };
 
 /* === 一般類（漢堡/吐司/蛋餅/總匯/客製） === */
@@ -1212,6 +1210,41 @@ function buildDrinkControls(item, containerSel='#pmOptions'){
       </div>
     </div>
   `);
+
+  // ★ 新增：套用 ITEM_OPTION_RULES（例如奶茶／鮮奶茶的甜度）
+  const extraRules = ITEM_OPTION_RULES[item.id] || [];
+  extraRules.forEach(rule => {
+    if (rule.type === 'toggle') {
+      const id = `opt_${rule.key}`;
+      root.insertAdjacentHTML('beforeend', `
+        <label class="mt-3 flex items-center gap-3 border rounded-xl px-3 py-2">
+          <input id="${id}" type="checkbox"
+                 data-opt-type="toggle"
+                 data-key="${rule.key}"
+                 data-price="${rule.price || 0}">
+          <span>${rule.label}${rule.price ? `（${rule.price > 0 ? '+' + rule.price : rule.price}）` : ''}</span>
+        </label>
+      `);
+    } else if (rule.type === 'choice') {
+      const id = `opt_${rule.key}`;
+      const optsHtml = (rule.options || []).map(o => `
+        <option value="${o.value}" data-price="${o.price || 0}">
+          ${o.label}${o.price ? `（+${o.price}）` : ''}
+        </option>
+      `).join('');
+      root.insertAdjacentHTML('beforeend', `
+        <div class="mt-3">
+          <label class="text-sm text-slate-600">${rule.label}</label>
+          <select id="${id}"
+                  class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
+                  data-opt-type="choice"
+                  data-key="${rule.key}">
+            ${optsHtml}
+          </select>
+        </div>
+      `);
+    }
+  });
 }
 
 /* === 研磨咖啡：固定 M/L 價（不套 +5/+10）=== */
@@ -1364,21 +1397,46 @@ function readSelectionsFor(item){
   }
 
 
-  // 飲料
   if (item._catKey === 'drinks'){
     const sizeSel = el('#opt_drink_size');
     const tempSel = el('#opt_drink_temp');
     let delta = 0, parts = [];
+  
+    // 杯型／溫度
     if (sizeSel){
       const so = sizeSel.selectedOptions[0];
-      delta += Number(so.dataset.extra||0);
-      parts.push('尺寸：' + so.textContent.replace(/（\+\d+）/,''));
+      delta += Number(so.dataset.extra || 0);
+      parts.push('尺寸：' + so.textContent.replace(/（\+\d+）/, ''));
     }
     if (tempSel){
-      parts.push('溫度：' + (tempSel.value==='ice'?'冰':'熱'));
+      parts.push('溫度：' + (tempSel.value === 'ice' ? '冰' : '熱'));
     }
+  
+    // ★ 額外規則（例如奶茶／鮮奶茶甜度）
+    const extraRules = ITEM_OPTION_RULES[item.id] || [];
+    extraRules.forEach(rule => {
+      if (rule.type === 'toggle') {
+        const input = el(`#opt_${rule.key}`);
+        if (input?.checked) {
+          const p = Number(input.dataset.price || 0);
+          delta += p;
+          parts.push(rule.label);
+        }
+      } else if (rule.type === 'choice') {
+        const sel = el(`#opt_${rule.key}`);
+        const opt = sel?.selectedOptions?.[0];
+        if (opt) {
+          const labelText = rule.label + '：' + opt.textContent.replace(/（\+\d+）$/, '');
+          const p = Number(opt.dataset.price || 0);
+          delta += p;
+          parts.push(labelText);
+        }
+      }
+    });
+  
     return { optionDelta: delta, optionSummary: parts.join('｜') };
   }
+
 
   // 研磨咖啡
   if (item._catKey === 'coffee'){
