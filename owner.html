@@ -411,9 +411,9 @@ function renderCards(){
   const c = document.querySelector('#ordersContainer');
   let html = '';
   for (const o of ORDERS){
-    const pickupInfo = o.diningType === 'dinein'
-      ? `桌號: ${o.pickupTime}`
-      : `取餐時間: ${formatPickupTimeToTaipei(o.pickupTime)}`;
+    const isDineIn = o.diningType === 'dinein';
+    const dineinOrderTime = formatPickupTimeToTaipei(o.createdAt || o.createTime || o.created_time);
+
 
     const itemsList = String(o.items || '')
       .split(/\r?\n/).map(it=>{
@@ -426,10 +426,19 @@ function renderCards(){
     <div class="card ${o.diningType==='dinein'?'dinein':'takeout'} text-sm leading-snug">
       <h3 class="text-2xl font-semibold">訂單編號: #${o.pickupNo}</h3>
       <div class="border-t border-b my-2 py-2">
-        <p class="text-lg">${o.diningType==='dinein'?'內用':'外帶'}</p>
-        <p class="text-lg">${pickupInfo}</p>
+        <p class="text-lg">${isDineIn ? '內用' : '外帶'}</p>
+        ${isDineIn
+          ? `
+            <p class="text-lg">桌號: ${o.pickupTime}</p>
+            <p class="text-lg">點餐時間: ${dineinOrderTime}</p>
+          `
+          : `
+            <p class="text-lg">取餐時間: ${formatPickupTimeToTaipei(o.pickupTime)}</p>
+          `
+        }
         <p class="text-lg">姓名: ${o.name} | 電話: ${o.phone}</p>
       </div>
+
       <div class="border-t border-b my-2 py-2">
         <p class="text-lg">餐點: <br> ${itemsList}</p>
       </div>
