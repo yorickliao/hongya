@@ -280,10 +280,6 @@ function getSortTs(o){
   return Number.POSITIVE_INFINITY;
 }
 
-// ─── 抓單之後、render 之前 ───
-orders.sort((a,b)=> getSortTs(a) - getSortTs(b));
-
-
 
 async function detectPausedStatus(){
   const date = document.querySelector('#datePicker')?.value || todayLocal();
@@ -380,15 +376,27 @@ async function loadOrders(){
 }
 
 function applyFilters(){
-  // 伺服器端已依 date 參數過濾，這裡只保留「未完成」
-  ORDERS = (ORDERS_ALL || []).filter(o => !isDoneVal(o.done));
+  ORDERS = (ORDERS_ALL || [])
+    .filter(o => !isDoneVal(o.done))
+    .sort((a,b) => {
+      const t = getSortTs(a) - getSortTs(b);
+      if (t !== 0) return t;
+      return (Number(a.pickupNo)||0) - (Number(b.pickupNo)||0);
+    });
 }
+
 
 /* 當日完成清單與數量 */
 function getCompletedToday(){
-  // 同理，伺服器已過濾當日，這裡只取「已完成」
-  return (ORDERS_ALL || []).filter(o => isDoneVal(o.done));
+  return (ORDERS_ALL || [])
+    .filter(o => isDoneVal(o.done))
+    .sort((a,b) => {
+      const t = getSortTs(a) - getSortTs(b);
+      if (t !== 0) return t;
+      return (Number(a.pickupNo)||0) - (Number(b.pickupNo)||0);
+    });
 }
+
 
 function updateCompletedCountBadge(){
   const count = getCompletedToday().length;
