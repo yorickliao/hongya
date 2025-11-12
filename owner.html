@@ -245,6 +245,45 @@ function setPauseBtnBusy(on){
   }
 }
 
+// 放在 owner.html 的 <script> 裡（渲染前）
+function toDateSafe(v){
+  // 已是 Date
+  if (v instanceof Date && !isNaN(v)) return v;
+
+  // ISO / 2025-11-11 05:30 / 2025/11/11 05:30 / 11/11/2025 05:30 等
+  const d1 = new Date(v);
+  if (!isNaN(d1)) return d1;
+
+  // 僅 HH:mm（如 "05:30"、"13:00"）
+  if (typeof v === 'string' && /^\d{1,2}:\d{2}$/.test(v)) {
+    const now = new Date();
+    const [hh, mm] = v.split(':').map(n=>parseInt(n,10));
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0);
+  }
+
+  // 數字/桌號等不可解析
+  return null;
+}
+
+// 取得用於排序的時間戳：外帶→pickupTime；內用→createdAt；否則最大值(排最後)
+function getSortTs(o){
+  // 外帶優先用取餐時間
+  if (o?.diningType === 'takeout') {
+    const d = toDateSafe(o.pickupTime || o.desiredPickupTime || o.pickupAtHint || o.pickup);
+    if (d) return d.getTime();
+  }
+  // 內用或外帶取餐時間無法解析時，用建立時間
+  const c = toDateSafe(o.createdAt || o.createTime || o.created_time);
+  if (c) return c.getTime();
+
+  // 都沒有就排到最後
+  return Number.POSITIVE_INFINITY;
+}
+
+// ─── 抓單之後、render 之前 ───
+orders.sort((a,b)=> getSortTs(a) - getSortTs(b));
+
+
 
 async function detectPausedStatus(){
   const date = document.querySelector('#datePicker')?.value || todayLocal();
