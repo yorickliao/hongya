@@ -1000,7 +1000,7 @@ function buildOptionControls(catKey){
   const itemId = currentItem?.id || '';
 
   // 焗烤吐司三款：不顯示選項
-  if (['toast_bacon_bake','toast_tuna_bake','toast_ham_bake',"toast_french_meat","toast_french_cheese","toast_french_tuna"].includes(itemId)) return;
+  if (['toast_bacon_bake','toast_tuna_bake','toast_ham_bake'].includes(itemId)) return;
 
   // 基礎分類規則 + 特定品項規則
   const baseRules  = CATEGORY_OPTION_RULES[catKey] || [];
