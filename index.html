@@ -1,4 +1,4 @@
-<!doctype html>
+9<!doctype html>
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
@@ -503,6 +503,9 @@ const MENU = {
     { id:"toast_bacon_bake",     name:"培根焗烤厚片",     price:55 },
     { id:"toast_tuna_bake",      name:"鮪魚焗烤厚片",     price:55 },
     { id:"toast_ham_bake",       name:"火腿焗烤厚片",     price:55 },
+    { id:"toast_french_meat",    name:"法國肉鬆吐司",     price:45 },
+    { id:"toast_french_cheese",  name:"法國起司吐司",     price:45 },
+    { id:"toast_french_tuna",    name:"法國鮪魚吐司",     price:50 },
   ],
 
   /* ★補回完整蛋餅清單 */
@@ -997,7 +1000,7 @@ function buildOptionControls(catKey){
   const itemId = currentItem?.id || '';
 
   // 焗烤吐司三款：不顯示選項
-  if (['toast_bacon_bake','toast_tuna_bake','toast_ham_bake'].includes(itemId)) return;
+  if (['toast_bacon_bake','toast_tuna_bake','toast_ham_bake',"toast_french_meat","toast_french_cheese","toast_french_tuna"].includes(itemId)) return;
 
   // 基礎分類規則 + 特定品項規則
   const baseRules  = CATEGORY_OPTION_RULES[catKey] || [];
