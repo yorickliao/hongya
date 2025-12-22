@@ -1264,21 +1264,42 @@ const COFFEE_PRICE = {
   coffee_special:   { M:40, L:60 },
   coffee_yuanyang:  { M:40, L:60 },
 };
-function buildCoffeeControls(item, containerSel='#pmOptions'){
+/* === 修改後的 buildCoffeeControls === */
+// 增加第三個參數 isSetMeal，預設為 false
+function buildCoffeeControls(item, containerSel='#pmOptions', isSetMeal=false){
+  // 取得該咖啡的中/大杯價格
   const price = COFFEE_PRICE[item.id] || { M:item.price||0, L:(item.price||0)+10 };
   const root = el(containerSel); 
-  if(!root) return; // 安全檢查
-  root.innerHTML = ''; 
-  
-  // 下方內容不用變，維持原樣 ...
+  if(!root) return;
+  root.innerHTML = '';
+
+  // ★ 計算顯示文字 logic
+  let mText, lText;
+  if (isSetMeal) {
+    // 套餐模式：顯示「加價金額」 (原價 - 15)
+    // 例如美式 35，顯示 (+20)
+    const mDiff = price.M - 15;
+    const lDiff = price.L - 15;
+    mText = `中（+${mDiff}）`;
+    lText = `大（+${lDiff}）`;
+  } else {
+    // 單點模式：顯示「全額」
+    // 例如美式 35，顯示 ($35)
+    mText = `中（$${price.M}）`;
+    lText = `大（$${price.L}）`;
+  }
+
+  // ★ 渲染 HTML
+  // 注意：data-extra 的邏輯不變（M=0, L=價差），這是給程式計算總金額用的
+  // 我們只改變 <option> 裡面的顯示文字 (mText, lText)
   root.insertAdjacentHTML('beforeend', `
     <div class="grid gap-3 md:grid-cols-2">
       <div>
         <label class="text-sm text-slate-600">杯型</label>
         <select id="opt_coffee_size" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
                 data-kind="coffee_size">
-          <option value="M" data-extra="0">中（$${price.M}）</option>
-          <option value="L" data-extra="${price.L - price.M}">大（$${price.L}）</option>
+          <option value="M" data-extra="0">${mText}</option>
+          <option value="L" data-extra="${price.L - price.M}">${lText}</option>
         </select>
       </div>
       <div>
@@ -1357,7 +1378,7 @@ function buildSetmealControls(item){
     if (id.startsWith('coffee_')) {
       // 傳入套餐用的容器 ID '#set_drink_opts'
       // 這裡傳入 item 結構需包含 id 以便查價
-      buildCoffeeControls({ id }, '#set_drink_opts');
+      buildCoffeeControls({ id }, '#set_drink_opts', true);
     } else {
       // 原本的邏輯
       const tmpItem = { id, _catKey:'drinks' };
