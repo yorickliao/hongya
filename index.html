@@ -684,6 +684,11 @@ const SETMEAL_DRINKS = [
   { id:'drink_thai_milk_tea',    label:'泰式奶茶',    add:20 },
   { id:'drink_cold_brew_tea',    label:'冷泡茶',      add:10 },  // 只供冰
   { id:'snack_corn_soup',        label:'玉米濃湯',    add:25 },
+  // ★ 新增咖啡系列
+  { id:'coffee_americano', label:'美式咖啡', add:20 },
+  { id:'coffee_latte',     label:'拿鐵咖啡', add:35 },
+  { id:'coffee_special',   label:'特調咖啡', add:25 },
+  { id:'coffee_yuanyang',  label:'鴛鴦奶茶', add:25 },
 ];
 
 /* ★ 套餐「進去可以選」的附加選項（不加價，只做紀錄） */
@@ -1259,9 +1264,13 @@ const COFFEE_PRICE = {
   coffee_special:   { M:40, L:60 },
   coffee_yuanyang:  { M:40, L:60 },
 };
-function buildCoffeeControls(item){
+function buildCoffeeControls(item, containerSel='#pmOptions'){
   const price = COFFEE_PRICE[item.id] || { M:item.price||0, L:(item.price||0)+10 };
-  const root = el('#pmOptions'); root.innerHTML = '';
+  const root = el(containerSel); 
+  if(!root) return; // 安全檢查
+  root.innerHTML = ''; 
+  
+  // 下方內容不用變，維持原樣 ...
   root.insertAdjacentHTML('beforeend', `
     <div class="grid gap-3 md:grid-cols-2">
       <div>
@@ -1343,14 +1352,25 @@ function buildSetmealControls(item){
   list.addEventListener('change', ()=>{
     const id = root.querySelector('input[name="opt_set_drink"]:checked')?.value;
     if (!id) { opts.classList.add('hidden'); opts.innerHTML=''; return; }
-    const tmpItem = { id, _catKey:'drinks' };
-    const metaExtra = SETMEAL_DRINKS.find(x=>x.id===id)?.meta;
-    if (metaExtra) DRINKS_META[id] = metaExtra;
-    buildDrinkControls(tmpItem, '#set_drink_opts');
+    
+    // ★ 修改開始：判斷是咖啡還是一般飲料
+    if (id.startsWith('coffee_')) {
+      // 傳入套餐用的容器 ID '#set_drink_opts'
+      // 這裡傳入 item 結構需包含 id 以便查價
+      buildCoffeeControls({ id }, '#set_drink_opts');
+    } else {
+      // 原本的邏輯
+      const tmpItem = { id, _catKey:'drinks' };
+      const metaExtra = SETMEAL_DRINKS.find(x=>x.id===id)?.meta;
+      if (metaExtra) DRINKS_META[id] = metaExtra;
+      buildDrinkControls(tmpItem, '#set_drink_opts');
+    }
+    // ★ 修改結束
+
     opts.classList.remove('hidden');
     document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
-
-    // 保序：確保「口味/醬汁」在「套餐飲品」之前
+    
+    // 保序邏輯 (維持原樣)
     const extraBlk = root.querySelector('#blk_set_extra');
     const drinkBlk = root.querySelector('#blk_set_drinks');
     if (extraBlk && drinkBlk && extraBlk.nextElementSibling !== drinkBlk) {
@@ -1376,14 +1396,18 @@ function readSelectionsFor(item){
       delta += add;
       const label = SETMEAL_DRINKS.find(d=>d.id===drinkId)?.label || '';
   
-      const sizeSel = el('#opt_drink_size');
-      const tempSel = el('#opt_drink_temp');
+      // ★ 修改開始：同時嘗試抓取一般飲料 OR 咖啡的選單元件
+      const sizeSel = el('#opt_drink_size') || el('#opt_coffee_size');
+      const tempSel = el('#opt_drink_temp') || el('#opt_coffee_temp');
+      // ★ 修改結束
+
       let szTxt='', tempTxt='';
       if (sizeSel){
         const opt = sizeSel.selectedOptions[0];
         const szAdd = Number(opt.dataset.extra||0);
         delta += szAdd;
-        szTxt = opt.textContent.replace(/（\+\d+）/,'');
+        // 移除括號內的價格顯示，只留尺寸文字 (例如 "中（$35）" -> "中")
+        szTxt = opt.textContent.replace(/（[+\$]\d+）/,'');
       }
       if (tempSel) tempTxt = (tempSel.value==='ice'?'冰':'熱');
   
