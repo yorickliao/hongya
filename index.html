@@ -1329,11 +1329,11 @@ function buildCoffeeControls(item, containerSel='#pmOptions', isSetMeal=false){
 }
 
 /* === 套餐：上方確認套餐、下方選「套餐飲品」+ 杯型/冰熱 + 加價 === */
-function buildSetmealControls(item){
-  const root = el('#pmOptions'); 
+function buildSetmealControls(item) {
+  const root = el('#pmOptions');
   root.innerHTML = '';
 
-  // 1) 套餐確認
+  // 1. 套餐基本資訊 (最上方)
   root.insertAdjacentHTML('beforeend', `
     <div class="border rounded-xl">
       <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">套餐</div>
@@ -1344,101 +1344,73 @@ function buildSetmealControls(item){
     </div>
   `);
 
-  // 2) ★ 套餐附加選項（醬汁/口味）—先放在前面
-  function buildSetmealControls(item){
-    const root = el('#pmOptions'); 
-    root.innerHTML = '';
-    // 1) 套餐確認
-    root.insertAdjacentHTML('beforeend', `
-      <div class="border rounded-xl">
-        <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">套餐</div>
-        <div class="px-3 py-2 flex items-center gap-3">
-          <input type="radio" checked class="accent-slate-900">
-          <span>${item.name}</span>
-        </div>
-      </div>
-    `);
-  
-    // 2) ★ 新增：渲染 ITEM_OPTION_RULES (處理麵體選擇與加購)
-    const itemRules = ITEM_OPTION_RULES[item.id] || [];
-    itemRules.forEach(rule => {
-      if (rule.type === 'choice') {
-        const optHtml = rule.options.map(o => `<option value="${o.value}" data-price="${o.price||0}">${o.label}${o.price?`（+${o.price}）`:''}</option>`).join('');
-        root.insertAdjacentHTML('beforeend', `
-          <div class="border rounded-xl mt-4">
-            <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">${rule.label}</div>
-            <div class="p-3">
-              <select id="opt_${rule.key}" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900" data-opt-type="choice" data-key="${rule.key}">
-                ${optHtml}
-              </select>
-            </div>
-          </div>
-        `);
-      } else if (rule.type === 'toggle') {
-        root.insertAdjacentHTML('beforeend', `
-          <label class="mt-4 flex items-center gap-3 border rounded-xl px-3 py-2">
-            <input id="opt_${rule.key}" type="checkbox" data-opt-type="toggle" data-key="${rule.key}" data-price="${rule.price||0}">
-            <span>${rule.label}（+${rule.price}）</span>
-          </label>
-        `);
-      }
-    });
-  
-    // 3) 原本的 SETMEAL_EXTRA_RULES (如里肌麵醬汁等)
-    const extra = SETMEAL_EXTRA_RULES[item.id];
-    if (extra) {
-      const optHtml = extra.options.map(v => `<option value="${v}">${v}</option>`).join('');
+  // 2. 渲染 ITEM_OPTION_RULES (如：魚柳鍋燒的麵體、加購)
+  const itemRules = ITEM_OPTION_RULES[item.id] || [];
+  itemRules.forEach(rule => {
+    if (rule.type === 'choice') {
+      const optHtml = rule.options.map(o => `<option value="${o.value}" data-price="${o.price||0}">${o.label}${o.price?`（+${o.price}）`:''}</option>`).join('');
       root.insertAdjacentHTML('beforeend', `
-        <div id="blk_set_extra" class="border rounded-xl mt-4">
-          <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">${extra.label}</div>
+        <div class="border rounded-xl mt-4">
+          <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">${rule.label}</div>
           <div class="p-3">
-            <select id="opt_set_extra" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
-                    data-extra-key="${extra.key}" data-extra-label="${extra.label}">
+            <select id="opt_${rule.key}" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900" data-opt-type="choice" data-key="${rule.key}">
               ${optHtml}
             </select>
           </div>
         </div>
       `);
+    } else if (rule.type === 'toggle') {
+      root.insertAdjacentHTML('beforeend', `
+        <label class="mt-4 flex items-center gap-3 border rounded-xl px-3 py-2">
+          <input id="opt_${rule.key}" type="checkbox" data-opt-type="toggle" data-key="${rule.key}" data-price="${rule.price||0}">
+          <span>${rule.label}${rule.price?`（+${rule.price}）`:''}</span>
+        </label>
+      `);
     }
-  
-    // 4) 套餐飲品
-    const drinkRows = SETMEAL_DRINKS.map(d=>{
-      const addTxt = d.add ? `+${d.add}` : '';
-      return `<label class="flex items-center justify-between gap-3 px-3 py-2 border-b last:border-0">
-          <span class="flex items-center gap-3">
-            <input type="radio" name="opt_set_drink" value="${d.id}" data-add="${d.add||0}">
-            <span>${d.label}${addTxt ? `（${addTxt}）` : ''}</span>
-          </span>
-        </label>`;
-    }).join('');
-  
+  });
+
+  // 3. 渲染 SETMEAL_EXTRA_RULES (如：鐵板麵醬汁)
+  const extra = SETMEAL_EXTRA_RULES[item.id];
+  if (extra) {
+    const optHtml = extra.options.map(v => `<option value="${v}">${v}</option>`).join('');
     root.insertAdjacentHTML('beforeend', `
-      <div id="blk_set_drinks" class="border rounded-xl mt-4">
-        <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">套餐飲品</div>
-        <div id="set_drink_list" class="divide-y">${drinkRows}</div>
-        <div id="set_drink_opts" class="p-3 hidden"></div>
+      <div id="blk_set_extra" class="border rounded-xl mt-4">
+        <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">${extra.label}</div>
+        <div class="p-3">
+          <select id="opt_set_extra" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
+                  data-extra-key="${extra.key}" data-extra-label="${extra.label}">
+            ${optHtml}
+          </select>
+        </div>
       </div>
     `);
-  
-    // 綁定飲品切換事件... (後續邏輯維持原樣)
-    const list = root.querySelector('#set_drink_list');
-    const opts = root.querySelector('#set_drink_opts');
-    list.addEventListener('change', ()=>{
-      const id = root.querySelector('input[name="opt_set_drink"]:checked')?.value;
-      if (!id) { opts.classList.add('hidden'); opts.innerHTML=''; return; }
-      if (id.startsWith('coffee_')) { buildCoffeeControls({ id }, '#set_drink_opts', true); } 
-      else { buildDrinkControls({ id, _catKey:'drinks' }, '#set_drink_opts'); }
-      opts.classList.remove('hidden');
-      document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
-    });
   }
+
+  // 4. 套餐飲品區域 (最下方)
+  const drinkRows = SETMEAL_DRINKS.map(d => `<label class="flex items-center justify-between gap-3 px-3 py-2 border-b last:border-0"><span class="flex items-center gap-3"><input type="radio" name="opt_set_drink" value="${d.id}" data-add="${d.add||0}"><span>${d.label}${d.add ? `（+${d.add}）` : ''}</span></span></label>`).join('');
+  
+  root.insertAdjacentHTML('beforeend', `
+    <div id="blk_set_drinks" class="border rounded-xl mt-4">
+      <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">套餐飲品</div>
+      <div id="set_drink_list" class="divide-y">${drinkRows}</div>
+      <div id="set_drink_opts" class="p-3 hidden"></div>
+    </div>
+  `);
+
+  // 5. 飲品詳細選項監聽 (杯型、冰熱)
+  const list = root.querySelector('#set_drink_list');
+  const opts = root.querySelector('#set_drink_opts');
+  list.addEventListener('change', () => {
+    const id = root.querySelector('input[name="opt_set_drink"]:checked')?.value;
+    if (!id) { opts.classList.add('hidden'); opts.innerHTML = ''; return; }
     
-    // 保序邏輯 (維持原樣)
-    const extraBlk = root.querySelector('#blk_set_extra');
-    const drinkBlk = root.querySelector('#blk_set_drinks');
-    if (extraBlk && drinkBlk && extraBlk.nextElementSibling !== drinkBlk) {
-      root.insertBefore(extraBlk, drinkBlk);
+    if (id.startsWith('coffee_')) {
+      buildCoffeeControls({ id }, '#set_drink_opts', true);
+    } else {
+      buildDrinkControls({ id, _catKey: 'drinks' }, '#set_drink_opts');
     }
+    opts.classList.remove('hidden');
+    el('#pmOptions')?.dispatchEvent(new Event('change'));
   });
 }
 
