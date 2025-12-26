@@ -449,7 +449,7 @@ const MENU = {
     { id:"set_green_curry",            name:"沙嗲咖哩麵套餐",   price:125  },
     { id:"set_american_pork",          name:"美式大豬堡套餐",   price:120 },
     { id:"set_waffle",                 name:"華夫鬆餅套餐",     price:130 },
-    { id:"set_fish_noodle",            name:"魚柳鍋燒意麵套餐",  price:140 },
+    { id:"set_fish_noodle",            name:"魚柳鍋燒意麵套餐",  price:125 },
   ],
 
   burger: [
@@ -875,6 +875,7 @@ const UPGRADE_PLANS = {
   '39_hotdog_tea':      { label: '熱狗＋中杯紅茶',  baseDeltaRef: 0 },
   '49_garlicbread_tea': { label: '香蒜麵包＋中杯紅茶', baseDeltaRef: 0 },
   '59_tempura_milk':    { label: '甜不辣＋中杯奶茶',  baseDeltaRef: 5 },
+  '69_fish_wintermelon': { label: '魚條＋中杯冬瓜茶',  baseDeltaRef: 10 },
 };
 
 // 由 SETMEAL_DRINKS 取得「相對小杯紅茶」的加價表與顯示名
@@ -957,7 +958,6 @@ const ITEM_OPTION_RULES = {
     ]},
     { type:'toggle', key:'shacha', label:'加沙茶', price:10 },
     { type:'toggle', key:'cheese', label:'加起司', price:10 },
-    { type:'toggle', key:'extra_fish', label:'加魚條', price:69 },
   ],
   toast_egg_salad: [
     { type:'toggle', key:'extra_egg', label:'加蛋', price:15 },
@@ -1093,6 +1093,10 @@ function buildOptionControls(catKey){
             <input type="radio" name="upgradeMeal" value="59_tempura_milk" data-add="59" data-desc="甜不辣＋中杯奶茶">
           </label>
           <label class="flex items-center justify-between px-3 py-2">
+            <span>+69 魚條＋中杯冬瓜茶</span>
+            <input type="radio" name="upgradeMeal" value="69_fish_wintermelon" data-add="69" data-desc="魚條＋中杯冬瓜茶">
+          </label>
+          <label class="flex items-center justify-between px-3 py-2">
             <span>不升級</span>
             <input type="radio" name="upgradeMeal" value="" data-add="0" checked>
           </label>
@@ -1111,23 +1115,21 @@ function buildOptionControls(catKey){
       const area = document.getElementById(areaId);
       if (!sel || !area) return;
     
-      if (!sel.value) {
-        area.classList.add('hidden');
-        area.innerHTML = '';
-        el('#pmOptions')?.dispatchEvent(new Event('change'));
-        return;
-      }
-    
+      if (!sel.value) { /* ... 略 ... */ return; }
       area.classList.remove('hidden');
     
-      // ★ 59 → baseline=20；其餘 → 15（只影響下拉顯示）
-      const baseline = (sel.value === '59_tempura_milk') ? 20 : 15;
+      // 設定基準價：69方案對應冬瓜茶基準 25；59方案對應奶茶 20；其餘 15
+      let baseline = 15;
+      if (sel.value === '69_fish_wintermelon') baseline = 25;
+      else if (sel.value === '59_tempura_milk') baseline = 20;
+    
       const drinkSelect = renderUpgradeDrinkSelect(areaId, selectId, baseline);
     
-      // 預設 59 → 奶茶；其餘 → 紅茶
-      drinkSelect.value = (sel.value === '59_tempura_milk') ? 'drink_milk_tea' : 'drink_black_tea';
+      // 設定預設飲料
+      if (sel.value === '69_fish_wintermelon') drinkSelect.value = 'drink_wintermelon_tea';
+      else if (sel.value === '59_tempura_milk') drinkSelect.value = 'drink_milk_tea';
+      else drinkSelect.value = 'drink_black_tea';
     
-      // 生成杯型/冰熱
       mountUpgradeDrinkOptions(drinkSelect);
     
       // 預設杯型選中杯 L，符合「不換飲料就送中杯」
@@ -1590,16 +1592,21 @@ function readSelectionsFor(item){
   // ★ 升級套餐（預設「不換飲料」送中杯紅茶 / 中杯奶茶；若換其它或改變杯型/溫度 → 補最終價 − 基準(15/20)）
   const upgrade = document.querySelector('input[name="upgradeMeal"]:checked');
   if (upgrade && Number(upgrade.dataset.add) > 0) {
-    const planPrice = Number(upgrade.dataset.add) || 0;  // 39 / 49 / 59
+    const planPrice = Number(upgrade.dataset.add) || 0;
     const planKey   = upgrade.value || '';
   
-    // 基準（用於「換其它」時補差）：39/49 → 15；59 → 20
-    const baseline = (planKey === '59_tempura_milk') ? 20 : 15;
+    // 1. 設定基準 (換其它時補差價用)
+    let baseline = 15;
+    if (planKey === '69_fish_wintermelon') baseline = 25;
+    else if (planKey === '59_tempura_milk') baseline = 20;
   
-    // 預設「不換飲料」所包含的飲料與杯型
-    const included = (planKey === '59_tempura_milk')
-      ? { drinkId: 'drink_milk_tea',  size: 'L' } // +59：中杯奶茶
-      : { drinkId: 'drink_black_tea', size: 'L' }; // +39/+49：中杯紅茶
+    // 2. 設定預設包含的飲料內容
+    let included = { drinkId: 'drink_black_tea', size: 'L' }; // 預設 39/49
+    if (planKey === '69_fish_wintermelon') {
+      included = { drinkId: 'drink_wintermelon_tea', size: 'L' };
+    } else if (planKey === '59_tempura_milk') {
+      included = { drinkId: 'drink_milk_tea', size: 'L' };
+    }
   
     // 使用者在升級區塊實際選到的飲料
     const upDrinkSel = document.getElementById('upgradeDrinkSelect');
