@@ -1458,15 +1458,16 @@ function readSelectionsFor(item){
       let szTxt='', tempTxt='';
       if (sizeSel){
         const opt = sizeSel.selectedOptions[0];
-        const szAdd = Number(opt.dataset.extra||0);
+        const szAdd = Number(opt.dataset.extra || 0);
         delta += szAdd;
+        
+        // 判斷是否為咖啡選項，若是，則強制顯示中/大
         if (sizeSel.id === 'opt_coffee_size') {
           szTxt = sizeSel.value === 'M' ? '中杯' : '大杯';
         } else {
           // 一般飲料維持原本的 小(M) / 中(L) / 大(XL) 邏輯
           szTxt = opt.textContent.replace(/（[+\$]\d+）/,'');
-        // 移除括號內的價格顯示，只留尺寸文字 (例如 "中（$35）" -> "中")
-        szTxt = opt.textContent.replace(/（[+\$]\d+）/,'');
+        }
       }
       if (tempSel) tempTxt = (tempSel.value==='ice'?'冰':'熱');
   
