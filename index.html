@@ -1121,7 +1121,7 @@ function buildOptionControls(catKey){
     
       // 【定義基準價】
       let baseline = 15;
-      if (sel.value === '69_fish_wintermelon') baseline = 25; // 基準為冬瓜茶價格
+      if (sel.value === '69_fish_wintermelon') baseline = 20; // 基準為冬瓜茶價格
       else if (sel.value === '59_tempura_milk') baseline = 20; // 基準為奶茶價格
     
       const drinkSelect = renderUpgradeDrinkSelect('upgradeDrinkArea', 'upgradeDrinkSelect', baseline);
@@ -1615,7 +1615,7 @@ function readSelectionsFor(item){
     
     if (upDrinkSel) {
       const drinkId = upDrinkSel.value;
-      let baseline = (planKey === '69_fish_wintermelon' ? 25 : (planKey === '59_tempura_milk' ? 20 : 15));
+      let baseline = (planKey === '69_fish_wintermelon' ? 20 : (planKey === '59_tempura_milk' ? 20 : 15));
       
       let baseChangeFee = 0; // 換這款飲料(中杯)要補多少
       let sizeExtraFee = 0;   // 改大杯要再補多少
