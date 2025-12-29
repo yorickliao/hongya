@@ -890,15 +890,20 @@ function renderUpgradeDrinkSelect(containerId, selectId, baseline = 15, defaultD
   if (!area) return;
 
   const options = SETMEAL_DRINKS.map(d => {
-    // 修復點：將 drinkId 改為 d.id
-    const drinkPrice = d.id.startsWith('coffee_') 
+    // 修正：這裡必須用 d.id 而不是 drinkId
+    let drinkPrice = d.id.startsWith('coffee_') 
                        ? (COFFEE_PRICE[d.id]?.M || 35) 
                        : (MENU_DRINK_PRICE[d.id] || 0);
     
-    const diff = Math.max(0, drinkPrice - baseline);
-    if (d.id === defaultDrinkId) {
-      diff = 0;
+    // 如果是以 M 為基底的飲料（如紅茶、奶茶），中杯 (L) 原價需加 5 元
+    if (!d.id.startsWith('coffee_') && DRINKS_META[d.id]?.baseSize === 'M') {
+       drinkPrice += 5;
     }
+
+    let diff = Math.max(0, drinkPrice - baseline);
+    // 核心邏輯：如果是預設飲品，顯示為 +0 (不顯示標籤)
+    if (d.id === defaultDrinkId) diff = 0;
+
     const txt = diff ? `（+${diff}）` : '';
     return `<option value="${d.id}">${d.label}${txt}</option>`;
   }).join('');
