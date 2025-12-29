@@ -890,8 +890,9 @@ function renderUpgradeDrinkSelect(containerId, selectId, baseline = 15) {
   if (!area) return;
 
   const options = SETMEAL_DRINKS.map(d => {
-    const drinkPrice = drinkId.startsWith('coffee_') 
-                       ? (COFFEE_PRICE[d.id]?.M || 35) // 咖啡取中杯價
+    // 修復點：將 drinkId 改為 d.id
+    const drinkPrice = d.id.startsWith('coffee_') 
+                       ? (COFFEE_PRICE[d.id]?.M || 35) 
                        : (MENU_DRINK_PRICE[d.id] || 0);
     
     const diff = Math.max(0, drinkPrice - baseline);
@@ -1309,17 +1310,12 @@ function buildCoffeeControls(item, containerSel='#pmOptions', isSetMeal=false) {
   root.innerHTML = '';
 
   let mText, lText, lExtra;
+  lExtra = price.L - price.M; // 價差
 
   if (isSetMeal) {
-    // 【UI 優化邏輯】：
-    // 中杯作為更換基準，標籤顯示 +0 以避免重複加價感
-    // 大杯顯示「相對於中杯」的差價
-    lExtra = price.L - price.M; // 55 - 35 = 20
     mText = `中杯（+0）`;
     lText = `大杯（+${lExtra}）`;
   } else {
-    // 單點模式維持原標籤
-    lExtra = price.L - price.M;
     mText = `中杯（$${price.M}）`;
     lText = `大杯（$${price.L}）`;
   }
@@ -1621,33 +1617,30 @@ function readSelectionsFor(item){
       const drinkId = upDrinkSel.value;
       let baseline = (planKey === '69_fish_wintermelon' ? 25 : (planKey === '59_tempura_milk' ? 20 : 15));
       
-      let baseChangeFee = 0; // 飲料更換為該品項(中杯)的差額
-      let sizeExtraFee = 0;   // 尺寸進階(大杯)的差額
-  
+      let baseChangeFee = 0; // 換這款飲料(中杯)要補多少
+      let sizeExtraFee = 0;   // 改大杯要再補多少
+
       if (drinkId.startsWith('coffee_')) {
         const p = COFFEE_PRICE[drinkId] || { M: 35, L: 55 };
-        // 1. 先算中杯換購費 (例如 35 - 25 = 10)
         baseChangeFee = Math.max(0, p.M - baseline);
-        // 2. 再算尺寸加價 (大杯則加 20，中杯加 0)
         const sizeSel = el('#opt_coffee_size');
         sizeExtraFee = sizeSel ? Number(sizeSel.selectedOptions[0].dataset.extra || 0) : 0;
       } else if (drinkId === 'snack_corn_soup') {
         baseChangeFee = Math.max(0, 40 - baseline);
       } else {
-        // 一般飲料
-        baseChangeFee = Math.max(0, MENU_DRINK_PRICE[drinkId] - baseline);
+        baseChangeFee = Math.max(0, (MENU_DRINK_PRICE[drinkId] || 0) - baseline);
         const sizeSel = el('#opt_drink_size');
         sizeExtraFee = sizeSel ? calcSizeExtraForDrink(drinkId, sizeSel.value) : 0;
       }
-  
-      // 總 delta = 方案費 + 換購費 + 尺寸費
+
       delta += planPrice + baseChangeFee + sizeExtraFee;
       
-      // 生成備註文字
+      const drinkName = DRINK_LABEL_MAP[drinkId] || '';
       const sizeLabel = drinkId.startsWith('coffee_') 
                         ? (el('#opt_coffee_size')?.value === 'M' ? '中杯' : '大杯')
-                        : '中杯'; // 簡化處理
-      parts.push(`升級：${upgrade.dataset.desc}（換：${DRINK_LABEL_MAP[drinkId]}｜${sizeLabel}）`);
+                        : (drinkId === 'snack_corn_soup' ? '均一價' : (el('#opt_drink_size')?.value === 'M' ? '小杯' : el('#opt_drink_size')?.value === 'L' ? '中杯' : '大杯'));
+      
+      parts.push(`升級：${upgrade.dataset.desc}（換：${drinkName}｜${sizeLabel}）`);
     }
   }
 
