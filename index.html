@@ -1606,37 +1606,47 @@ function readSelectionsFor(item){
 
   // 在 readSelectionsFor 的 // ★ 升級套餐 區塊
   if (upgrade && Number(upgrade.dataset.add) > 0) {
-      const planPrice = Number(upgrade.dataset.add);
-      const planKey = upgrade.value;
-      const upDrinkSel = el('#upgradeDrinkSelect');
+    const planPrice = Number(upgrade.dataset.add);
+    const planKey = upgrade.value;
+    const upDrinkSel = el('#upgradeDrinkSelect');
+    
+    if (upDrinkSel) {
+      const drinkId = upDrinkSel.value;
       
-      if (upDrinkSel) {
-        const drinkId = upDrinkSel.value;
-        // 1. 定義折抵與預設
-        let planCredit = 15;
-        let defaultId = 'drink_black_tea';
-        if (planKey === '59_tempura_milk') { planCredit = 20; defaultId = 'drink_milk_tea'; }
-        else if (planKey === '69_fish_wintermelon') { planCredit = 20; defaultId = 'drink_wintermelon_tea'; }
-  
-        let extraByDrink = 0;
-        const sizeSel = el('#opt_drink_size') || el('#opt_coffee_size');
-        const sizeCode = sizeSel ? sizeSel.value : 'L';
-  
-        // 2. 【結算寫死條件】：如果是預設飲品且中杯，補價為 0
-        if (drinkId === defaultId && sizeCode === 'L') {
-          extraByDrink = 0;
-        } else {
-          // 其餘情況依據 data-extra 讀取（上面 build 控制項已經算好正確的差額了）
-          extraByDrink = sizeSel ? Number(sizeSel.selectedOptions[0].dataset.extra || 0) : 0;
-        }
-  
-        delta += planPrice + extraByDrink;
+      // 1. 設定該方案的折抵額度與預設品項
+      let planCredit = 15;
+      let defaultId = 'drink_black_tea';
+      if (planKey === '59_tempura_milk') { planCredit = 20; defaultId = 'drink_milk_tea'; }
+      else if (planKey === '69_fish_wintermelon') { planCredit = 20; defaultId = 'drink_wintermelon_tea'; }
+
+      let extraByDrink = 0;
+      // 抓取杯型選單
+      const sizeSel = el('#opt_drink_size') || el('#opt_coffee_size');
+      const sizeCode = sizeSel ? sizeSel.value : 'L';
+
+      // 2. 【核心結算邏輯】：判斷加價金額
+      if (drinkId === defaultId && sizeCode === 'L') {
+        // A. 如果是預設飲品且中杯 -> $0
+        extraByDrink = 0;
+      } else if (drinkId === 'snack_corn_soup') {
+        // B. 玉米濃湯 -> 40 - 折抵額
+        extraByDrink = Math.max(0, 40 - planCredit);
+      } else if (sizeSel) {
+        // C. 咖啡或其他選單品項 -> 直接讀取 UI 算好的 data-extra
+        extraByDrink = Number(sizeSel.selectedOptions[0].dataset.extra || 0);
+      } else {
+        // D. 其餘一般飲料換購 (中杯)
+        let drinkLPrice = MENU_DRINK_PRICE[drinkId] || 0;
+        if (DRINKS_META[drinkId]?.baseSize === 'M') drinkLPrice += 5;
+        extraByDrink = Math.max(0, drinkLPrice - planCredit);
+      }
+
+      // 3. 將加價總計累加 (方案原價 + 飲料補價)
+      delta += planPrice + extraByDrink;
       
+      // 生成摘要標籤
       const drinkName = DRINK_LABEL_MAP[drinkId] || '';
-      const sizeLabel = drinkId.startsWith('coffee_') 
-                        ? (el('#opt_coffee_size')?.value === 'M' ? '中杯' : '大杯')
-                        : (drinkId === 'snack_corn_soup' ? '均一價' : (el('#opt_drink_size')?.value === 'M' ? '小杯' : el('#opt_drink_size')?.value === 'L' ? '中杯' : '大杯'));
-      
+      const sizeLabel = drinkId.startsWith('coffee_') ? (sizeCode === 'M' ? '中杯' : '大杯') : (drinkId === 'snack_corn_soup' ? '均一價' : (sizeCode === 'L' ? '中杯' : '大杯'));
       parts.push(`升級：${upgrade.dataset.desc}（換：${drinkName}｜${sizeLabel}）`);
     }
   }
