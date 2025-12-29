@@ -1112,10 +1112,14 @@ function buildOptionControls(catKey){
     const radios = Array.from(document.querySelectorAll('input[name="upgradeMeal"]'));
     const handleUpgradeChange = () => {
       const sel = document.querySelector('input[name="upgradeMeal"]:checked');
-      const area = document.getElementById(areaId);
+      const area = document.getElementById('upgradeDrinkArea');
       if (!sel || !area) return;
     
-      if (!sel.value) { /* ... 略 ... */ return; }
+      if (!sel.value) {
+        area.classList.add('hidden'); area.innerHTML = '';
+        return;
+      }
+    
       area.classList.remove('hidden');
     
       // 設定基準價：69方案對應冬瓜茶基準 25；59方案對應奶茶 20；其餘 15
@@ -1123,23 +1127,30 @@ function buildOptionControls(catKey){
       if (sel.value === '69_fish_wintermelon') baseline = 25;
       else if (sel.value === '59_tempura_milk') baseline = 20;
     
-      const drinkSelect = renderUpgradeDrinkSelect(areaId, selectId, baseline);
+      const drinkSelect = renderUpgradeDrinkSelect('upgradeDrinkArea', 'upgradeDrinkSelect', baseline);
     
       // 設定預設飲料
       if (sel.value === '69_fish_wintermelon') drinkSelect.value = 'drink_wintermelon_tea';
       else if (sel.value === '59_tempura_milk') drinkSelect.value = 'drink_milk_tea';
       else drinkSelect.value = 'drink_black_tea';
     
-      mountUpgradeDrinkOptions(drinkSelect);
-    
-      // 預設杯型選中杯 L，符合「不換飲料就送中杯」
-      const sizeEl = document.getElementById('opt_drink_size');
-      if (sizeEl) {
-        const hasL = Array.from(sizeEl.options).some(o => o.value === 'L');
-        if (hasL) sizeEl.value = 'L';
-      }
-    
-      document.getElementById('pmOptions')?.dispatchEvent(new Event('change'));
+      // 監聽飲料選擇，若是咖啡則調用咖啡專用 UI
+      drinkSelect.onchange = () => {
+        const optsWrap = document.getElementById('upgradeDrinkSelect_opts');
+        optsWrap.innerHTML = '';
+        if (drinkSelect.value.startsWith('coffee_')) {
+          // 這裡傳入 true 代表是套餐換購模式
+          buildCoffeeControls({ id: drinkSelect.value }, '#upgradeDrinkSelect_opts', true);
+        } else {
+          buildDrinkControls({ id: drinkSelect.value, _catKey: 'drinks' }, '#upgradeDrinkSelect_opts');
+          // 預設為中杯 (L)
+          const sizeEl = document.getElementById('opt_drink_size');
+          if (sizeEl) sizeEl.value = 'L';
+        }
+      };
+      
+      // 執行第一次渲染
+      drinkSelect.onchange();
     };
 
 
@@ -1598,66 +1609,41 @@ function readSelectionsFor(item){
   // ★ 升級套餐（預設「不換飲料」送中杯紅茶 / 中杯奶茶；若換其它或改變杯型/溫度 → 補最終價 − 基準(15/20)）
   const upgrade = document.querySelector('input[name="upgradeMeal"]:checked');
   if (upgrade && Number(upgrade.dataset.add) > 0) {
-    const planPrice = Number(upgrade.dataset.add) || 0;
-    const planKey   = upgrade.value || '';
-  
-    // 1. 設定基準 (換其它時補差價用)
+    const planPrice = Number(upgrade.dataset.add);
+    const planKey = upgrade.value;
+    
+    // 基準設定
     let baseline = 15;
     if (planKey === '69_fish_wintermelon') baseline = 25;
     else if (planKey === '59_tempura_milk') baseline = 20;
   
-    // 2. 設定預設包含的飲料內容
-    let included = { drinkId: 'drink_black_tea', size: 'L' }; // 預設 39/49
-    if (planKey === '69_fish_wintermelon') {
-      included = { drinkId: 'drink_wintermelon_tea', size: 'L' };
-    } else if (planKey === '59_tempura_milk') {
-      included = { drinkId: 'drink_milk_tea', size: 'L' };
-    }
-  
-    // 使用者在升級區塊實際選到的飲料
     const upDrinkSel = document.getElementById('upgradeDrinkSelect');
-    const drinkId = upDrinkSel ? upDrinkSel.value : '';
-    let drinkPart = '';
-    let drinkExtraByFormula = 0;
+    if (upDrinkSel) {
+      const drinkId = upDrinkSel.value;
+      let finalDrinkPrice = 0;
+      let sizeLabel = '';
   
-    if (drinkId) {
-      const sizeSel  = document.getElementById('opt_drink_size');
-      const tempSel  = document.getElementById('opt_drink_temp');
-      const sizeCode = sizeSel ? sizeSel.value : (DRINKS_META[drinkId]?.baseSize || 'M');
-  
-      // 計最終飲料價 = 基價 + 杯型加價
-      const basePrice = Number(MENU_DRINK_PRICE[drinkId] || 0);
-      const sizeExtra = calcSizeExtraForDrink(drinkId, sizeCode);
-      const finalDrinkPrice = basePrice + sizeExtra;
-  
-      // 判斷是否等同於「不換飲料的預設」：同品項且中杯(L)
-      const isIncludedDefault = (drinkId === included.drinkId && sizeCode === included.size);
-  
-      if (!isIncludedDefault) {
-        // 「換其它」或「同飲料但改杯型/溫度」：補差價 = max(0, 最終價 − 基準(15/20))
-        drinkExtraByFormula = Math.max(0, finalDrinkPrice - baseline);
+      if (drinkId.startsWith('coffee_')) {
+        const sizeSel = document.getElementById('opt_coffee_size');
+        const sizeCode = sizeSel ? sizeSel.value : 'M';
+        finalDrinkPrice = (COFFEE_PRICE[drinkId] ? COFFEE_PRICE[drinkId][sizeCode] : 35);
+        sizeLabel = (sizeCode === 'M' ? '中杯' : '大杯');
       } else {
-        // 完全符合預設（不換飲料 & 中杯）→ 不另外加價
-        drinkExtraByFormula = 0;
+        const sizeSel = document.getElementById('opt_drink_size');
+        const sizeCode = sizeSel ? sizeSel.value : 'L';
+        finalDrinkPrice = Number(MENU_DRINK_PRICE[drinkId] || 0) + calcSizeExtraForDrink(drinkId, sizeCode);
+        sizeLabel = (sizeCode === 'M' ? '小杯' : sizeCode === 'L' ? '中杯' : '大杯');
       }
   
-      // 顯示字串（只有「換」才加註）
-      if (!isIncludedDefault) {
-        const sizeTxt = sizeSel
-          ? sizeSel.selectedOptions[0].textContent.replace(/（\+\d+）/,'')
-          : (sizeCode==='M'?'小':(sizeCode==='L'?'中':'大'));
-        const tmpTxt  = tempSel ? (tempSel.value==='ice'?'冰':'熱') : '';
-        const labelMap = DRINK_LABEL_MAP && DRINK_LABEL_MAP[drinkId];
-        const label   = labelMap ? labelMap : (currentItem?.name || '');
-        drinkPart = `${label}${sizeTxt?`｜${sizeTxt}`:''}${tmpTxt?`｜${tmpTxt}`:''}`;
-      }
+      // 計算補價
+      const formulaAdd = Math.max(0, finalDrinkPrice - baseline);
+      delta += planPrice + formulaAdd;
+      
+      // 摘要文字
+      const tempSel = document.getElementById('opt_drink_temp') || document.getElementById('opt_coffee_temp');
+      const tempTxt = tempSel ? (tempSel.value === 'ice' ? '冰' : '熱') : '';
+      parts.push(`升級：${upgrade.dataset.desc}（換：${DRINK_LABEL_MAP[drinkId]}｜${sizeLabel}｜${tempTxt}）`);
     }
-  
-    // 小計加上：方案價格 +（若有換其它才）飲料差價
-    delta += planPrice + drinkExtraByFormula;
-  
-    const planDesc = upgrade.dataset.desc || '';
-    parts.push('升級：' + planDesc + (drinkPart ? `（換：${drinkPart}）` : ''));
   }
 
 
