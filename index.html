@@ -885,7 +885,7 @@ const DRINK_LABEL_MAP = Object.fromEntries(SETMEAL_DRINKS.map(d => [d.id, d.labe
 // 封裝：建立可選飲料下拉（用套餐飲料清單）
 // 封裝：建立可選飲料下拉（用套餐飲料清單）
 // baseline: 15（+39/+49）或 20（+59）；只影響下拉顯示，不影響實際計價
-function renderUpgradeDrinkSelect(containerId, selectId, baseline = 15) {
+function renderUpgradeDrinkSelect(containerId, selectId, baseline = 15, defaultDrinkId = '') {
   const area = document.getElementById(containerId);
   if (!area) return;
 
@@ -1135,7 +1135,7 @@ function buildOptionControls(catKey){
       }
     
       // 這裡 baseline 傳入折抵額度
-      const drinkSelect = renderUpgradeDrinkSelect('upgradeDrinkArea', 'upgradeDrinkSelect', planCredit, defaultId);
+      const drinkSelect = renderUpgradeDrinkSelect('upgradeDrinkArea', 'upgradeDrinkSelect', planCredit, defaultDrinkId);
       drinkSelect.value = defaultId;
     
       drinkSelect.onchange = () => {
