@@ -1114,23 +1114,17 @@ function buildOptionControls(catKey){
       const sel = document.querySelector('input[name="upgradeMeal"]:checked');
       const area = document.getElementById('upgradeDrinkArea');
       if (!sel || !area) return;
-    
-      if (!sel.value) {
-        area.classList.add('hidden');
-        area.innerHTML = '';
-        return;
-      }
-    
+      if (!sel.value) { area.classList.add('hidden'); area.innerHTML = ''; return; }
       area.classList.remove('hidden');
     
-      // 【決定基準價】：69方案基準25；59方案基準20；其餘15
+      // 【定義基準價】
       let baseline = 15;
-      if (sel.value === '69_fish_wintermelon') baseline = 25;
-      else if (sel.value === '59_tempura_milk') baseline = 20;
+      if (sel.value === '69_fish_wintermelon') baseline = 25; // 基準為冬瓜茶價格
+      else if (sel.value === '59_tempura_milk') baseline = 20; // 基準為奶茶價格
     
       const drinkSelect = renderUpgradeDrinkSelect('upgradeDrinkArea', 'upgradeDrinkSelect', baseline);
     
-      // 設定預設飲料
+      // 【設定預設飲料】
       if (sel.value === '69_fish_wintermelon') drinkSelect.value = 'drink_wintermelon_tea';
       else if (sel.value === '59_tempura_milk') drinkSelect.value = 'drink_milk_tea';
       else drinkSelect.value = 'drink_black_tea';
@@ -1139,16 +1133,20 @@ function buildOptionControls(catKey){
         const optsWrap = document.getElementById('upgradeDrinkSelect_opts');
         optsWrap.innerHTML = '';
         
+        // 咖啡模式
         if (drinkSelect.value.startsWith('coffee_')) {
-          // 傳入當前方案的 baseline 進行計算，顯示 +10, +30 等標籤
           buildCoffeeControls({ id: drinkSelect.value }, '#upgradeDrinkSelect_opts', true, baseline);
-        } else {
+        } 
+        // 玉米濃湯或一般飲料模式
+        else {
           buildDrinkControls({ id: drinkSelect.value, _catKey: 'drinks' }, '#upgradeDrinkSelect_opts');
-          const sizeEl = document.getElementById('opt_drink_size');
-          if (sizeEl) sizeEl.value = 'L'; // 一般飲料預設中杯
+          // 如果不是濃湯，預設選中杯 (L)
+          if (drinkSelect.value !== 'snack_corn_soup') {
+            const sizeEl = document.getElementById('opt_drink_size');
+            if (sizeEl) sizeEl.value = 'L';
+          }
         }
       };
-    
       drinkSelect.onchange();
     };
 
@@ -1213,6 +1211,16 @@ function buildToastSeriesControls(series){ // series: 'jam' | 'thick'
 function buildDrinkControls(item, containerSel='#pmOptions'){
   const meta = DRINKS_META[item.id] || { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] };
   const root = el(containerSel); root.innerHTML = '';
+
+  // 【玉米濃湯特殊處理】：不顯示杯型與溫度
+  if (item.id === 'snack_corn_soup') {
+    root.insertAdjacentHTML('beforeend', `
+      <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-600 text-sm">
+        此品項為固定容量與熱度（均一價），無須選擇杯型。
+      </div>
+    `);
+    return;
+  }
 
   const sizeOpts = meta.sizes.map(sz=>{
     let extra = 0;
@@ -1605,46 +1613,48 @@ function readSelectionsFor(item){
 
   // ★ 升級套餐（預設「不換飲料」送中杯紅茶 / 中杯奶茶；若換其它或改變杯型/溫度 → 補最終價 − 基準(15/20)）
   const upgrade = document.querySelector('input[name="upgradeMeal"]:checked');
-  // 在 readSelectionsFor 處理升級套餐的區塊內
+
+  // 在 readSelectionsFor 處理升級套餐的區塊
   if (upgrade && Number(upgrade.dataset.add) > 0) {
-    const planPrice = Number(upgrade.dataset.add);
+    const planPrice = Number(upgrade.dataset.add); // 39, 49, 59, 69
     const planKey = upgrade.value;
     const upDrinkSel = document.getElementById('upgradeDrinkSelect');
     
     if (upDrinkSel) {
       const drinkId = upDrinkSel.value;
-      let extraByDrink = 0; 
-      let drinkLabel = DRINK_LABEL_MAP[drinkId] || '';
+      let extraByDrink = 0;
+      let baseline = 15; // 預設基準
+      if (planKey === '69_fish_wintermelon') baseline = 25;
+      else if (planKey === '59_tempura_milk') baseline = 20;
+  
       let sizeLabel = '';
   
+      // A. 咖啡：讀取計算好的差額
       if (drinkId.startsWith('coffee_')) {
-        // 【咖啡邏輯】：直接讀取 select 選項中算好的 data-extra
         const sizeSel = document.getElementById('opt_coffee_size');
-        if (sizeSel) {
-          const selectedOpt = sizeSel.selectedOptions[0];
-          extraByDrink = Number(selectedOpt.dataset.extra || 0);
-          sizeLabel = (sizeSel.value === 'M' ? '中杯' : '大杯');
-        }
-      } else {
-        // 一般飲料邏輯：補 (最終飲料價 - 該方案基準價)
-        let baseline = 15;
-        if (planKey === '69_fish_wintermelon') baseline = 25;
-        else if (planKey === '59_tempura_milk') baseline = 20;
-  
+        extraByDrink = sizeSel ? Number(sizeSel.selectedOptions[0].dataset.extra || 0) : 0;
+        sizeLabel = (sizeSel?.value === 'M' ? '中杯' : '大杯');
+      } 
+      // B. 玉米濃湯：固定補價 = 40 - 基準
+      else if (drinkId === 'snack_corn_soup') {
+        extraByDrink = Math.max(0, 40 - baseline);
+        sizeLabel = '均一價';
+      }
+      // C. 一般飲料
+      else {
         const sizeSel = document.getElementById('opt_drink_size');
         const sizeCode = sizeSel ? sizeSel.value : 'L';
         const finalPrice = Number(MENU_DRINK_PRICE[drinkId] || 0) + calcSizeExtraForDrink(drinkId, sizeCode);
-        
         extraByDrink = Math.max(0, finalPrice - baseline);
         sizeLabel = (sizeCode === 'M' ? '小杯' : sizeCode === 'L' ? '中杯' : '大杯');
       }
   
-      // 總增量 = 方案基礎費 + 飲料換購補價
+      // 總結算金額
       delta += planPrice + extraByDrink;
-  
-      const tempSel = document.getElementById('opt_drink_temp') || document.getElementById('opt_coffee_temp');
-      const tempTxt = tempSel ? (tempSel.value === 'ice' ? '冰' : '熱') : '';
-      parts.push(`升級：${upgrade.dataset.desc}（換：${drinkLabel}｜${sizeLabel}｜${tempTxt}）`);
+      
+      // 生成購物車備註
+      const drinkLabel = DRINK_LABEL_MAP[drinkId] || '';
+      parts.push(`升級：${upgrade.dataset.desc}（換：${drinkLabel}｜${sizeLabel}）`);
     }
   }
 
