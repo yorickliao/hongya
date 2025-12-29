@@ -1024,143 +1024,104 @@ const ITEM_OPTION_RULES = {
 };
 
 /* === 一般類（漢堡/吐司/蛋餅/總匯/客製） === */
-function buildOptionControls(catKey){
-  const root = el('#pmOptions'); root.innerHTML = '';
+function buildOptionControls(catKey) {
+  const root = el('#pmOptions');
+  root.innerHTML = '';
   const itemId = currentItem?.id || '';
 
-  // 焗烤吐司三款：不顯示選項
-  if (['toast_bacon_bake','toast_tuna_bake','toast_ham_bake'].includes(itemId)) return;
+  // 1. 焗烤吐司不顯示選項
+  if (['toast_bacon_bake', 'toast_tuna_bake', 'toast_ham_bake'].includes(itemId)) return;
 
-  // 基礎分類規則 + 特定品項規則
-  const baseRules  = CATEGORY_OPTION_RULES[catKey] || [];
+  // 2. 組合基本規則與特定品項規則
+  const baseRules = CATEGORY_OPTION_RULES[catKey] || [];
   const extraRules = ITEM_OPTION_RULES[itemId] || [];
   let rules = [...baseRules, ...extraRules];
 
-  // === 不加蛋例外名單 ===
-  const REMOVE_EGG_EXCEPTIONS = [
-    'burg_placeholder',        // 美式奔牛堡
-    'burg_chicken_tender',     // 起飛嫩雞堡
-    'burg_double_pork_cheese', // 雙層豬肉起司堡
-    'burg_american_pork',      // 美式大豬堡
-    'toast_fried_pork',        // 炸豬排三明治
-    'toast_egg_salad',         // 雞蛋沙拉吐司
-    'toast_mash_salad',        // 薯泥沙拉吐司
-  ];
-
-  // 如果是例外品項 → 移除「不加蛋」選項
+  // 移除不加蛋例外
+  const REMOVE_EGG_EXCEPTIONS = ['burg_placeholder', 'burg_chicken_tender', 'burg_double_pork_cheese', 'burg_american_pork', 'toast_fried_pork', 'toast_egg_salad', 'toast_mash_salad'];
   if (REMOVE_EGG_EXCEPTIONS.includes(itemId)) {
     rules = rules.filter(r => r.key !== 'remove_egg');
   }
 
-  // === 渲染 ===
-  rules.forEach(rule=>{
-    if (rule.type === 'toggle'){
-      const id = `opt_${rule.key}`;
+  // 3. 渲染一般選項 (Toggle & Choice)
+  rules.forEach(rule => {
+    if (rule.type === 'toggle') {
       root.insertAdjacentHTML('beforeend', `
         <label class="flex items-center gap-3 border rounded-xl px-3 py-2">
-          <input id="${id}" type="checkbox" data-opt-type="toggle" data-key="${rule.key}" data-price="${rule.price||0}">
-          <span>${rule.label}${rule.price? `（${rule.price > 0 ? '+' + rule.price : rule.price}）`:''}</span>
-        </label>
-      `);
-    } else if (rule.type === 'choice'){
-      const id = `opt_${rule.key}`;
-      const opts = (rule.options || []).map(o =>
-        `<option value="${o.value}" data-price="${o.price || 0}">${o.label}${o.price ? `（+${o.price}）` : ''}</option>`
-      ).join('');
-
+          <input type="checkbox" data-opt-type="toggle" data-key="${rule.key}" data-price="${rule.price || 0}">
+          <span>${rule.label}${rule.price ? `（${rule.price > 0 ? '+' + rule.price : rule.price}）` : ''}</span>
+        </label>`);
+    } else if (rule.type === 'choice') {
+      const opts = (rule.options || []).map(o => `<option value="${o.value}" data-price="${o.price || 0}">${o.label}${o.price ? `（+${o.price}）` : ''}</option>`).join('');
       root.insertAdjacentHTML('beforeend', `
         <div>
           <label class="text-sm text-slate-600">${rule.label}</label>
-          <select id="${id}"
-                  class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900"
-                  data-opt-type="choice" data-key="${rule.key}">
-            ${opts}
-          </select>
-        </div>
-      `);
+          <select class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900" data-opt-type="choice" data-key="${rule.key}">${opts}</select>
+        </div>`);
     }
   });
 
-  // ★ 最後再插入「升級套餐」區塊（非套餐/飲料/咖啡）
-  if (!['setmeal','drinks','coffee'].includes(catKey)) {
-    // 升級主卡
+  // 4. ★ 超值升級區塊
+  if (!['setmeal', 'drinks', 'coffee'].includes(catKey)) {
     root.insertAdjacentHTML('beforeend', `
       <div class="border rounded-xl mt-4" id="upgradeBlock">
-        <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">升級套餐</div>
+        <div class="px-3 py-2 bg-slate-100 text-slate-800 font-medium rounded-t-xl">超值升級套餐</div>
         <div class="divide-y">
-          <label class="flex items-center justify-between px-3 py-2">
-            <span>+39 熱狗＋中杯紅茶</span>
-            <input type="radio" name="upgradeMeal" value="39_hotdog_tea" data-add="39" data-desc="熱狗＋中杯紅茶">
-          </label>
-          <label class="flex items-center justify-between px-3 py-2">
-            <span>+49 香蒜麵包＋中杯紅茶</span>
-            <input type="radio" name="upgradeMeal" value="49_garlicbread_tea" data-add="49" data-desc="香蒜麵包＋中杯紅茶">
-          </label>
-          <label class="flex items-center justify-between px-3 py-2">
-            <span>+59 甜不辣＋中杯奶茶</span>
-            <input type="radio" name="upgradeMeal" value="59_tempura_milk" data-add="59" data-desc="甜不辣＋中杯奶茶">
-          </label>
-          <label class="flex items-center justify-between px-3 py-2">
-            <span>+69 魚條＋中杯冬瓜茶</span>
-            <input type="radio" name="upgradeMeal" value="69_fish_wintermelon" data-add="69" data-desc="魚條＋中杯冬瓜茶">
-          </label>
-          <label class="flex items-center justify-between px-3 py-2">
-            <span>不升級</span>
-            <input type="radio" name="upgradeMeal" value="" data-add="0" checked>
-          </label>
+          <label class="flex items-center justify-between px-3 py-2"><span>+39 熱狗＋中杯紅茶</span><input type="radio" name="upgradeMeal" value="39_hotdog_tea" data-add="39" data-desc="熱狗＋中杯紅茶"></label>
+          <label class="flex items-center justify-between px-3 py-2"><span>+49 香蒜麵包＋中杯紅茶</span><input type="radio" name="upgradeMeal" value="49_garlicbread_tea" data-add="49" data-desc="香蒜麵包＋中杯紅茶"></label>
+          <label class="flex items-center justify-between px-3 py-2"><span>+59 甜不辣＋中杯奶茶</span><input type="radio" name="upgradeMeal" value="59_tempura_milk" data-add="59" data-desc="甜不辣＋中杯奶茶"></label>
+          <label class="flex items-center justify-between px-3 py-2"><span>+69 魚條＋中杯冬瓜茶</span><input type="radio" name="upgradeMeal" value="69_fish_wintermelon" data-add="69" data-desc="魚條＋中杯冬瓜茶"></label>
+          <label class="flex items-center justify-between px-3 py-2"><span>不升級</span><input type="radio" name="upgradeMeal" value="" data-add="0" checked></label>
         </div>
-        <!-- 動態：選擇升級後出現「可換其它飲料」與杯型/冰熱 -->
         <div id="upgradeDrinkArea" class="hidden"></div>
-      </div>
-    `);
-  
-    // 行為：選了任一升級方案 → 展開飲料選擇 + 杯型/冰熱
-    const areaId = 'upgradeDrinkArea';
-    const selectId = 'upgradeDrinkSelect';
-    const radios = Array.from(document.querySelectorAll('input[name="upgradeMeal"]'));
+      </div>`);
+
     const handleUpgradeChange = () => {
       const sel = document.querySelector('input[name="upgradeMeal"]:checked');
-      const area = document.getElementById('upgradeDrinkArea');
+      const area = el('#upgradeDrinkArea');
       if (!sel || !area) return;
-      if (!sel.value) { area.classList.add('hidden'); area.innerHTML = ''; return; }
-      area.classList.remove('hidden');
-    
-      // 【定義每個方案的折抵額度與預設飲品】
-      let planCredit = 15;      // 39/49 預設折 15
-      let defaultDrinkId = 'drink_black_tea';
-    
-      if (sel.value === '59_tempura_milk') {
-        planCredit = 20;        // 59 預設折 20
-        defaultDrinkId = 'drink_milk_tea';
-      } else if (sel.value === '69_fish_wintermelon') {
-        planCredit = 20;        // 69 預設折 20
-        defaultDrinkId = 'drink_wintermelon_tea';
+
+      if (!sel.value) {
+        area.classList.add('hidden'); area.innerHTML = '';
+        el('#pmOptions').dispatchEvent(new Event('change')); // 立即更新金額
+        return;
       }
-    
-      // 這裡 baseline 傳入折抵額度
-      const drinkSelect = renderUpgradeDrinkSelect('upgradeDrinkArea', 'upgradeDrinkSelect', planCredit, defaultDrinkId);
-      drinkSelect.value = defaultDrinkId;
-    
+      area.classList.remove('hidden');
+
+      // 核心邏輯：定義折抵額度 (planCredit) 與 預設飲品 (defaultId)
+      let planCredit = 15;
+      let defaultId = 'drink_black_tea';
+      if (sel.value === '59_tempura_milk') { planCredit = 20; defaultId = 'drink_milk_tea'; }
+      else if (sel.value === '69_fish_wintermelon') { planCredit = 20; defaultId = 'drink_wintermelon_tea'; }
+
+      // 渲染第一層飲料選單 (會自動處理預設品項不顯示加價)
+      const drinkSelect = renderUpgradeDrinkSelect('upgradeDrinkArea', 'upgradeDrinkSelect', planCredit, defaultId);
+      drinkSelect.value = defaultId;
+
       drinkSelect.onchange = () => {
-        const optsWrap = document.getElementById('upgradeDrinkSelect_opts');
+        const optsWrap = el('#upgradeDrinkSelect_opts');
         optsWrap.innerHTML = '';
         
-        // 將預設 ID 與折抵額度傳入控制項
         if (drinkSelect.value.startsWith('coffee_')) {
-          buildCoffeeControls({ id: drinkSelect.value }, '#upgradeDrinkSelect_opts', true, planCredit, defaultDrinkId);
+          // 咖啡：傳入折抵額度計算補價
+          buildCoffeeControls({ id: drinkSelect.value }, '#upgradeDrinkSelect_opts', true, planCredit);
         } else {
-          buildDrinkControls({ id: drinkSelect.value, _catKey: 'drinks' }, '#upgradeDrinkSelect_opts', true, planCredit, defaultDrinkId);
-          // 預設強制選中杯 (L)
-          const sizeEl = document.getElementById('opt_drink_size');
-          if (sizeEl) sizeEl.value = 'L';
+          // 一般飲料：傳入折抵額度與預設品項 ID
+          buildDrinkControls({ id: drinkSelect.value, _catKey: 'drinks' }, '#upgradeDrinkSelect_opts', true, planCredit, defaultId);
+          if (drinkSelect.value !== 'snack_corn_soup') {
+             const sizeEl = el('#opt_drink_size');
+             if (sizeEl) sizeEl.value = 'L'; // 預設選中杯
+          }
         }
+        // ★ 關鍵：選完飲料或杯型後，手動觸發外層 pmOptions 的 change 事件來更新「小計」
+        el('#pmOptions').dispatchEvent(new Event('change'));
       };
-      drinkSelect.onchange();
+      
+      drinkSelect.onchange(); // 執行初始化渲染
     };
 
-    radios.forEach(r => r.addEventListener('change', handleUpgradeChange));
+    document.querySelectorAll('input[name="upgradeMeal"]').forEach(r => r.addEventListener('change', handleUpgradeChange));
   }
-
 }
 // 果醬吐司（基價 20）：香蒜 +5 其餘 +0
 const JAM_FLAVORS = [
