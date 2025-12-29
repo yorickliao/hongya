@@ -1217,9 +1217,7 @@ function buildDrinkControls(item, containerSel='#pmOptions'){
   // 【玉米濃湯特殊處理】：不顯示杯型與溫度
   if (item.id === 'snack_corn_soup') {
     root.insertAdjacentHTML('beforeend', `
-      <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-600 text-sm">
-        此品項為固定容量與熱度（均一價），無須選擇杯型。
-      </div>
+      
     `);
     return;
   }
