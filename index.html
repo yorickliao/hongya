@@ -882,27 +882,25 @@ const UPGRADE_PLANS = {
 const DRINK_ADD_MAP = Object.fromEntries(SETMEAL_DRINKS.map(d => [d.id, Number(d.add||0)]));
 const DRINK_LABEL_MAP = Object.fromEntries(SETMEAL_DRINKS.map(d => [d.id, d.label || '']));
 
-// 封裝：建立可選飲料下拉（用套餐飲料清單）
-// 封裝：建立可選飲料下拉（用套餐飲料清單）
-// baseline: 15（+39/+49）或 20（+59）；只影響下拉顯示，不影響實際計價
+
 function renderUpgradeDrinkSelect(containerId, selectId, baseline = 15, defaultDrinkId = '') {
   const area = document.getElementById(containerId);
   if (!area) return;
 
   const options = SETMEAL_DRINKS.map(d => {
-    // 修正：這裡必須用 d.id 而不是 drinkId
-    let drinkPrice = d.id.startsWith('coffee_') 
-                       ? (COFFEE_PRICE[d.id]?.M || 35) 
-                       : (MENU_DRINK_PRICE[d.id] || 0);
-    
-    // 如果是以 M 為基底的飲料（如紅茶、奶茶），中杯 (L) 原價需加 5 元
-    if (!d.id.startsWith('coffee_') && DRINKS_META[d.id]?.baseSize === 'M') {
-       drinkPrice += 5;
+    // 1. 算出該飲料「中杯」的基準價
+    let drinkPrice = 0;
+    if (d.id.startsWith('coffee_')) {
+      drinkPrice = (COFFEE_PRICE[d.id]?.M || 35); // 咖啡取 M (中杯)
+    } else {
+      drinkPrice = (MENU_DRINK_PRICE[d.id] || 0);
+      // 如果飲料基價是 M (小杯)，中杯 L 需先 +5
+      if (DRINKS_META[d.id]?.baseSize === 'M') drinkPrice += 5;
     }
 
+    // 2. 計算跟方案折抵額的差價
     let diff = Math.max(0, drinkPrice - baseline);
-    // 核心邏輯：如果是預設飲品，顯示為 +0 (不顯示標籤)
-    if (d.id === defaultDrinkId) diff = 0;
+    if (d.id === defaultDrinkId) diff = 0; // 預設飲品顯示 +0
 
     const txt = diff ? `（+${diff}）` : '';
     return `<option value="${d.id}">${d.label}${txt}</option>`;
@@ -1337,21 +1335,24 @@ const COFFEE_PRICE = {
 /* === 修改後的 buildCoffeeControls === */
 // 增加第三個參數 isSetMeal，預設為 false
 /* === 修正後的咖啡控制項：根據方案基準動態計算差額 === */
-function buildCoffeeControls(item, containerSel='#pmOptions', isSetMeal=false) {
+function buildCoffeeControls(item, containerSel='#pmOptions', isSetMeal=false, baseline=15) {
   const price = COFFEE_PRICE[item.id] || { M: 35, L: 55 };
-  const root = el(containerSel); 
-  if(!root) return;
-  root.innerHTML = '';
+  const root = el(containerSel); if(!root) return; root.innerHTML = '';
 
-  let mText, lText, lExtra;
-  lExtra = price.L - price.M; // 價差
+  let mText, lText, mExtra, lExtra;
 
   if (isSetMeal) {
+    // 中杯補價 = 咖啡中杯價 - 方案基準
+    mExtra = Math.max(0, price.M - baseline);
+    // 大杯補價 = 咖啡大杯價 - 方案基準
+    lExtra = Math.max(0, price.L - baseline);
+    
+    // UI 呈現：既然第一層選單已顯示過中杯差價，這裡中杯顯示 +0，大杯顯示與中杯的價差
     mText = `中杯（+0）`;
-    lText = `大杯（+${lExtra}）`;
+    lText = `大杯（+${price.L - price.M}）`;
   } else {
-    mText = `中杯（$${price.M}）`;
-    lText = `大杯（$${price.L}）`;
+    mExtra = 0; lExtra = price.L - price.M;
+    mText = `中杯（$${price.M}）`; lText = `大杯（$${price.L}）`;
   }
 
   root.insertAdjacentHTML('beforeend', `
