@@ -1141,7 +1141,7 @@ function buildOptionControls(catKey){
     
       // 這裡 baseline 傳入折抵額度
       const drinkSelect = renderUpgradeDrinkSelect('upgradeDrinkArea', 'upgradeDrinkSelect', planCredit, defaultDrinkId);
-      drinkSelect.value = defaultId;
+      drinkSelect.value = defaultDrinkId;
     
       drinkSelect.onchange = () => {
         const optsWrap = document.getElementById('upgradeDrinkSelect_opts');
