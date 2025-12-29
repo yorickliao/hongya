@@ -1296,20 +1296,19 @@ const COFFEE_PRICE = {
 /* === 修改後的 buildCoffeeControls === */
 // 增加第三個參數 isSetMeal，預設為 false
 /* === 修正後的咖啡控制項：根據方案基準動態計算差額 === */
-function buildCoffeeControls(item, containerSel='#pmOptions', isSetMeal=false, baseline=15) {
+function buildCoffeeControls(item, containerSel='#pmOptions', isSetMeal=false, planCredit=15) {
   const price = COFFEE_PRICE[item.id] || { M: 35, L: 55 };
   const root = el(containerSel); if(!root) return; root.innerHTML = '';
 
   let mText, lText, mExtra, lExtra;
 
   if (isSetMeal) {
-    // 中杯補價 = 咖啡中杯價 - 方案基準
-    mExtra = Math.max(0, price.M - baseline);
-    // 大杯補價 = 咖啡大杯價 - 方案基準
-    lExtra = Math.max(0, price.L - baseline);
+    // 補價公式 = 咖啡原價 - 方案折抵額度
+    mExtra = Math.max(0, price.M - planCredit);
+    lExtra = Math.max(0, price.L - planCredit);
     
-    // UI 呈現：既然第一層選單已顯示過中杯差價，這裡中杯顯示 +0，大杯顯示與中杯的價差
-    mText = `中杯（+0）`;
+    // UI 呈現：既然第一層選單已顯示過 +10，這裡中杯寫 +0，大杯寫差額，避免混淆
+    mText = `中杯（+0）`; 
     lText = `大杯（+${price.L - price.M}）`;
   } else {
     mExtra = 0; lExtra = price.L - price.M;
@@ -1321,7 +1320,7 @@ function buildCoffeeControls(item, containerSel='#pmOptions', isSetMeal=false, b
       <div>
         <label class="text-sm text-slate-600">杯型選擇</label>
         <select id="opt_coffee_size" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900">
-          <option value="M" data-extra="0">${mText}</option>
+          <option value="M" data-extra="${mExtra}">${mText}</option>
           <option value="L" data-extra="${lExtra}">${lText}</option>
         </select>
       </div>
