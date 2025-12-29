@@ -896,6 +896,9 @@ function renderUpgradeDrinkSelect(containerId, selectId, baseline = 15) {
                        : (MENU_DRINK_PRICE[d.id] || 0);
     
     const diff = Math.max(0, drinkPrice - baseline);
+    if (d.id === defaultDrinkId) {
+      diff = 0;
+    }
     const txt = diff ? `（+${diff}）` : '';
     return `<option value="${d.id}">${d.label}${txt}</option>`;
   }).join('');
@@ -1132,8 +1135,8 @@ function buildOptionControls(catKey){
       }
     
       // 這裡 baseline 傳入折抵額度
-      const drinkSelect = renderUpgradeDrinkSelect('upgradeDrinkArea', 'upgradeDrinkSelect', planCredit);
-      drinkSelect.value = defaultDrinkId;
+      const drinkSelect = renderUpgradeDrinkSelect('upgradeDrinkArea', 'upgradeDrinkSelect', planCredit, defaultId);
+      drinkSelect.value = defaultId;
     
       drinkSelect.onchange = () => {
         const optsWrap = document.getElementById('upgradeDrinkSelect_opts');
