@@ -1024,6 +1024,7 @@ const ITEM_OPTION_RULES = {
 };
 
 /* === 一般類（漢堡/吐司/蛋餅/總匯/客製） === */
+/* === 一般類（漢堡/吐司/蛋餅/總匯/客製） === */
 function buildOptionControls(catKey) {
   const root = el('#pmOptions');
   root.innerHTML = '';
@@ -1046,17 +1047,19 @@ function buildOptionControls(catKey) {
   // 3. 渲染一般選項 (Toggle & Choice)
   rules.forEach(rule => {
     if (rule.type === 'toggle') {
+      // ★★★ 修正處：補上 id="opt_${rule.key}" ★★★
       root.insertAdjacentHTML('beforeend', `
         <label class="flex items-center gap-3 border rounded-xl px-3 py-2">
-          <input type="checkbox" data-opt-type="toggle" data-key="${rule.key}" data-price="${rule.price || 0}">
+          <input id="opt_${rule.key}" type="checkbox" data-opt-type="toggle" data-key="${rule.key}" data-price="${rule.price || 0}">
           <span>${rule.label}${rule.price ? `（${rule.price > 0 ? '+' + rule.price : rule.price}）` : ''}</span>
         </label>`);
     } else if (rule.type === 'choice') {
       const opts = (rule.options || []).map(o => `<option value="${o.value}" data-price="${o.price || 0}">${o.label}${o.price ? `（+${o.price}）` : ''}</option>`).join('');
+      // ★★★ 修正處：補上 id="opt_${rule.key}" ★★★
       root.insertAdjacentHTML('beforeend', `
         <div>
           <label class="text-sm text-slate-600">${rule.label}</label>
-          <select class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900" data-opt-type="choice" data-key="${rule.key}">${opts}</select>
+          <select id="opt_${rule.key}" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900" data-opt-type="choice" data-key="${rule.key}">${opts}</select>
         </div>`);
     }
   });
