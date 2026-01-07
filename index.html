@@ -1222,6 +1222,11 @@ function buildDrinkControls(item, containerSel='#pmOptions', isSetMeal=false, pl
       // 非套餐（單點）模式的加價
       if (meta.baseSize === 'M') extra = (sz==='L'?5:(sz==='XL'?10:0));
       else if (meta.baseSize === 'L') extra = (sz==='XL'?5:0);
+      
+      // 2. ★ 補上這行：如果有設定 xlExtra，就用設定的值覆蓋預設值
+      if (sz === 'XL' && meta.xlExtra) {
+        extra = meta.xlExtra;
+      }
     }
     
     const text = sz==='M'?'小':(sz==='L'?'中':'大');
