@@ -1653,8 +1653,24 @@ function readSelectionsFor(item){
       
       // 生成摘要標籤
       const drinkName = DRINK_LABEL_MAP[drinkId] || '';
-      const sizeLabel = drinkId.startsWith('coffee_') ? (sizeCode === 'M' ? '中杯' : '大杯') : (drinkId === 'snack_corn_soup' ? '均一價' : (sizeCode === 'L' ? '中杯' : '大杯'));
-      parts.push(`升級：${upgrade.dataset.desc}（換：${drinkName}｜${sizeLabel}）`);
+      
+      // 處理杯型文字
+      let sizeLabel = '';
+      if (drinkId === 'snack_corn_soup') {
+        sizeLabel = '均一價';
+      } else if (drinkId.startsWith('coffee_')) {
+        sizeLabel = (sizeCode === 'M' ? '中杯' : '大杯');
+      } else {
+        sizeLabel = (sizeCode === 'L' ? '中杯' : '大杯');
+      }
+
+      // 處理溫度文字 (抓取一般飲料或咖啡的溫度選單)
+      const tempSel = el('#opt_drink_temp') || el('#opt_coffee_temp');
+      const tempLabel = tempSel ? (tempSel.value === 'ice' ? '冰' : '熱') : '';
+
+      // 組合顯示字串 (如果有溫度就顯示，沒有則不顯示)
+      parts.push(`升級：${upgrade.dataset.desc}（換：${drinkName}｜${sizeLabel}${tempLabel ? '｜' + tempLabel : ''}）`);
+      // --- ★ 修改結束 ---
     }
   }
 
