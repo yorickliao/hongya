@@ -957,6 +957,13 @@ function calcSizeExtraForDrink(drinkId, sizeCode){
 // 針對特定品項的額外選項
 const ITEM_OPTION_RULES = {
 
+  snack_fried_egg: [
+    { type: 'choice', key: 'doneness', label: '熟度', options:[
+        { label:'全熟', value:'全熟', price:0 },
+        { label:'半熟', value:'半熟', price:0 },
+    ]}
+  ],
+
   set_fish_noodle: [
     { type:'choice', key:'noodle_type', label:'麵體選擇', options:[
       { label:'意麵', value:'意麵', price:0 },
@@ -1311,11 +1318,8 @@ function buildCoffeeControls(item, containerSel='#pmOptions', isSetMeal=false, p
   let mText, lText, mExtra, lExtra;
 
   if (isSetMeal) {
-    // 補價公式 = 咖啡原價 - 方案折抵額度
     mExtra = Math.max(0, price.M - planCredit);
     lExtra = Math.max(0, price.L - planCredit);
-    
-    // UI 呈現：既然第一層選單已顯示過 +10，這裡中杯寫 +0，大杯寫差額，避免混淆
     mText = `中杯（+0）`; 
     lText = `大杯（+${price.L - price.M}）`;
   } else {
@@ -1323,6 +1327,7 @@ function buildCoffeeControls(item, containerSel='#pmOptions', isSetMeal=false, p
     mText = `中杯（$${price.M}）`; lText = `大杯（$${price.L}）`;
   }
 
+  // ★ 修改：加入甜度選單 (opt_coffee_sugar)
   root.insertAdjacentHTML('beforeend', `
     <div class="grid gap-3 md:grid-cols-2">
       <div>
@@ -1338,6 +1343,14 @@ function buildCoffeeControls(item, containerSel='#pmOptions', isSetMeal=false, p
           <option value="ice">冰</option><option value="hot">熱</option>
         </select>
       </div>
+    </div>
+
+    <div class="mt-3">
+       <label class="text-sm text-slate-600">甜度</label>
+       <select id="opt_coffee_sugar" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900">
+         <option value="有糖">有糖</option>
+         <option value="無糖">無糖</option>
+       </select>
     </div>
   `);
 }
@@ -1542,9 +1555,14 @@ function readSelectionsFor(item){
 
 
   // 研磨咖啡
+  // 研磨咖啡
   if (item._catKey === 'coffee'){
     const sizeSel = el('#opt_coffee_size');
     const tempSel = el('#opt_coffee_temp');
+    
+    // ★ 新增：抓取甜度選單
+    const sugarSel = el('#opt_coffee_sugar'); 
+
     let delta = 0, parts = [];
     if (sizeSel){
       const so = sizeSel.selectedOptions[0];
@@ -1554,6 +1572,12 @@ function readSelectionsFor(item){
     if (tempSel){
       parts.push('溫度：' + (tempSel.value==='ice'?'冰':'熱'));
     }
+
+    // ★ 新增：寫入甜度
+    if (sugarSel){
+      parts.push('甜度：' + sugarSel.value);
+    }
+
     return { optionDelta: delta, optionSummary: parts.join('｜') };
   }
   // 系列吐司（果醬/厚片）：依口味加價
