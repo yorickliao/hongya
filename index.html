@@ -315,6 +315,8 @@ const el = s => document.querySelector(s);
 const money = n => '$' + Number(n||0).toLocaleString('zh-Hant');
 const pad2 = n => String(n).padStart(2, '0');
 const state = { cart: [], slots: [] };
+const TEMP_MAP = { ice: '冰', no_ice: '去冰', hot: '熱' };
+const getTempLabel = (v) => TEMP_MAP[v] || v;
 
 /* 新增：API 錯誤訊息對應（paused → 目前商家停止接單） */
 function mapApiError(errCode, serverMessage){
@@ -646,24 +648,24 @@ const MENU = {
    注意：此區塊只能宣告一次，避免 const 重複造成 JS 中斷
 */
 const DRINKS_META = {
-  drink_black_tea:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'] },
-  drink_soy_milk:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
-  drink_soy_milk_ns: { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
-  drink_milk_tea:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
-  drink_barley_milk:      { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
-  drink_rice_milk:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot'], xlExtra:15 },
-  drink_green_tea:       { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot']},
-  drink_wintermelon_tea: { baseSize:'L', sizes:['L','XL'], temps:['ice','hot'], xlExtra:5 },
+  drink_black_tea:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot','no_ice'] },
+  drink_soy_milk:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot','no_ice'], xlExtra:15 },
+  drink_soy_milk_ns: { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot','no_ice'], xlExtra:15 },
+  drink_milk_tea:         { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot','no_ice'], xlExtra:15 },
+  drink_barley_milk:      { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot','no_ice'], xlExtra:15 },
+  drink_rice_milk:        { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot','no_ice'], xlExtra:15 },
+  drink_green_tea:       { baseSize:'M', sizes:['M','L','XL'], temps:['ice','hot','no_ice']},
+  drink_wintermelon_tea: { baseSize:'L', sizes:['L','XL'], temps:['ice','hot','no_ice'], xlExtra:5 },
 
   
-  drink_orange_juice:     { baseSize:'M', sizes:['M','L','XL'], temps:['ice']      }, // 只有冰
-  drink_cranberry_juice:  { baseSize:'M', sizes:['M','L','XL'], temps:['ice']      }, // 只有冰
-  drink_fresh_milk_tea:   { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] , xlExtra:10},
-  drink_barley_milk_milk: { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] , xlExtra:10},
-  drink_soy_milk_tea:     { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] , xlExtra:10},
-  drink_cocoa_milk:       { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'], xlExtra:10 },
-  drink_thai_milk_tea:    { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot'] , xlExtra:10},
-  drink_cold_brew_tea:    { baseSize:'L', sizes:['L','XL'],     temps:['ice']      , xlExtra:10}, // 只有冰
+  drink_orange_juice:     { baseSize:'M', sizes:['M','L','XL'], temps:['ice','no_ice']      }, // 只有冰
+  drink_cranberry_juice:  { baseSize:'M', sizes:['M','L','XL'], temps:['ice','no_ice']      }, // 只有冰
+  drink_fresh_milk_tea:   { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot','no_ice'] , xlExtra:10},
+  drink_barley_milk_milk: { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot','no_ice'] , xlExtra:10},
+  drink_soy_milk_tea:     { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot','no_ice'] , xlExtra:10},
+  drink_cocoa_milk:       { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot','no_ice'], xlExtra:10 },
+  drink_thai_milk_tea:    { baseSize:'L', sizes:['L','XL'],     temps:['ice','hot','no_ice'] , xlExtra:10},
+  drink_cold_brew_tea:    { baseSize:'L', sizes:['L','XL'],     temps:['ice','no_ice']      , xlExtra:10}, // 只有冰
 };
 
 // 用餐升級飲品（以套餐含「小杯紅茶」為基準的加價）
@@ -1241,7 +1243,7 @@ function buildDrinkControls(item, containerSel='#pmOptions', isSetMeal=false, pl
   }).join('');
 
   const tempOpts = meta.temps.map(t=>{
-    const text = t==='ice'?'冰':'熱';
+    const text = (t === 'ice' ? '冰' : (t === 'no_ice' ? '去冰' : '熱'));
     return `<option value="${t}">${text}</option>`;
   }).join('');
 
@@ -1340,7 +1342,9 @@ function buildCoffeeControls(item, containerSel='#pmOptions', isSetMeal=false, p
       <div>
         <label class="text-sm text-slate-600">溫度</label>
         <select id="opt_coffee_temp" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-900">
-          <option value="ice">冰</option><option value="hot">熱</option>
+          <option value="ice">冰</option>
+          <option value="no_ice">去冰</option>
+          <option value="hot">熱</option>
         </select>
       </div>
     </div>
@@ -1494,7 +1498,7 @@ function readSelectionsFor(item){
           szTxt = opt.textContent.replace(/（[+\$]\d+）/,'');
         }
       }
-      if (tempSel) tempTxt = (tempSel.value==='ice'?'冰':'熱');
+      if (tempSel) tempTxt = getTempLabel(tempSel.value);
   
       parts.push(`套餐飲品：${label}${szTxt?`｜${szTxt}`:''}${tempTxt?`｜${tempTxt}`:''}`);
     }
@@ -1523,7 +1527,7 @@ function readSelectionsFor(item){
       parts.push('尺寸：' + so.textContent.replace(/（\+\d+）/, ''));
     }
     if (tempSel){
-      parts.push('溫度：' + (tempSel.value === 'ice' ? '冰' : '熱'));
+      parts.push('溫度：' + getTempLabel(tempSel.value));
     }
   
     // ★ 額外規則（例如奶茶／鮮奶茶甜度）
@@ -1570,7 +1574,7 @@ function readSelectionsFor(item){
       parts.push('尺寸：' + (sizeSel.value==='M'?'中':'大'));
     }
     if (tempSel){
-      parts.push('溫度：' + (tempSel.value==='ice'?'冰':'熱'));
+      parts.push('溫度：' + getTempLabel(tempSel.value));
     }
 
     // ★ 新增：寫入甜度
@@ -1690,7 +1694,7 @@ function readSelectionsFor(item){
 
       // 處理溫度文字 (抓取一般飲料或咖啡的溫度選單)
       const tempSel = el('#opt_drink_temp') || el('#opt_coffee_temp');
-      const tempLabel = tempSel ? (tempSel.value === 'ice' ? '冰' : '熱') : '';
+      const tempLabel = tempSel ? getTempLabel(tempSel.value) : '';
 
       // 組合顯示字串 (如果有溫度就顯示，沒有則不顯示)
       parts.push(`升級：${upgrade.dataset.desc}（換：${drinkName}｜${sizeLabel}${tempLabel ? '｜' + tempLabel : ''}）`);
