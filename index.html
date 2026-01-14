@@ -1977,7 +1977,12 @@ async function onSubmitOrder(e) {
 
     const items = state.cart.map(e => {
       const optsPart   = e._optionText ? `｜${e._optionText}` : '';
-      const nameWith = `${e.item.name}${optsPart}`;
+      // 新增：如果有備註，就串接在後面
+      const remarkPart = e.remark ? ` (備: ${e.remark})` : ''; 
+      
+      // 將備註也加入 nameWith 變數中
+      const nameWith = `${e.item.name}${optsPart}${remarkPart}`;
+      
       return { id: e.item.id, name: nameWith, price: e.item.price, qty: e.qty };
     });
     const subtotal = items.reduce((s, it) => s + it.price * it.qty, 0);
