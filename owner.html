@@ -165,7 +165,12 @@ const CACHE = { listKey: '', lastSig: '' };
 let IS_PAUSED = false;
 
 function fmtMoney(n){ return '$' + Number(n||0).toLocaleString('zh-Hant'); }
-function nowTime(){ const d = new Date(); return d.toLocaleString('zh-TW',{hour12:false}); }
+function nowTime() {
+  const d = new Date();
+  const datePart = d.toLocaleDateString('zh-TW'); // 取得 2026/1/19
+  const timePart = d.toLocaleTimeString('zh-TW', { hour12: false }); // 取得 08:53:27
+  return `${datePart} ${timePart}`; // 在中間強制加一個空格
+}
 function todayLocal(){
   const d = new Date(); const y = d.getFullYear();
   const m = String(d.getMonth()+1).padStart(2,'0'); const day = String(d.getDate()).padStart(2,'0');
