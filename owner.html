@@ -322,9 +322,6 @@ async function loadOrders(){
   const hint = document.getElementById('refreshHint');
   const listEl = document.querySelector('#ordersContainer');
 
-  metaEl.textContent = '載入中…';
-
-  // 只有第一次或當前沒有內容時顯示 skeleton；否則保留原清單並顯示「軟刷新」
   const useSkeleton = listEl.children.length === 0;
   if (useSkeleton) showSkeleton();
   else {
@@ -337,15 +334,13 @@ async function loadOrders(){
 
   try {
     const r = await fetch(url);
-    const t = await r.text();
-    let d; try{ d = JSON.parse(t);}catch{ throw new Error('回應格式錯誤'); }
+    const d = await r.json();
 
-    // 新增：同步接單狀態與暫停處理
     if (d && d.error === 'paused'){
       IS_PAUSED = true;
       updatePauseUI();
-      metaEl.textContent = '目前已停止接單';
-      return; // 暫停時不更新清單
+      metaEl.innerHTML = '<span class="text-rose-600 font-bold">目前已停止接單</span>';
+      return;
     } else {
       IS_PAUSED = false;
       updatePauseUI();
@@ -355,26 +350,26 @@ async function loadOrders(){
 
     ORDERS_ALL = d.orders || [];
 
-    // 快取簽名：資料沒變就不重繪（但仍更新 meta 時間）
-    const sig = signatureFor(date, ORDERS_ALL);
-    const listKey = date;
-    const noChange = (CACHE.listKey === listKey && CACHE.lastSig === sig);
-
-    applyFilters(); // 主畫面：只留未完成
-    if (!noChange) {
-      renderCards(); // 只有在資料變更時才重繪
-      if (isDrawerOpen()) renderCompletedOrders();
-      CACHE.listKey = listKey; CACHE.lastSig = sig;
-    }
+    // --- 關鍵修改：不判斷 noChange，直接重畫 ---
+    applyFilters(); 
+    renderCards(); // 強制更新所有訂單卡片
+    if (isDrawerOpen()) renderCompletedOrders();
     updateCompletedCountBadge();
+    // ---------------------------------------
 
     setLastSync();
-    metaEl.textContent = `共 ${ORDERS.length} 筆　最後更新：${lastSync}`;
+    
+    // 同時優化 meta 顯示資訊
+    metaEl.innerHTML = `
+      <div class="flex items-center gap-4 text-sm">
+        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">待處理：${ORDERS.length} 筆</span>
+        <span class="text-slate-500">最後同步：${lastSync}</span>
+      </div>
+    `;
   } catch (e) {
-    metaEl.textContent = '載入失敗：' + e.message;
+    metaEl.innerHTML = `<span class="text-rose-500 text-sm">載入失敗：${e.message}</span>`;
   } finally {
     isLoading = false;
-    // 還原軟刷新狀態
     listEl.classList.remove('updating');
     hint.classList.add('hidden');
   }
