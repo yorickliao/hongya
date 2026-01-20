@@ -164,6 +164,21 @@ const CACHE = { listKey: '', lastSig: '' };
 // 新增：接單狀態
 let IS_PAUSED = false;
 
+
+/* 新增：可靠的 fetch 包裝，防止 Google 伺服器卡死 */
+async function fetchWithTimeout(resource, options = {}, timeoutMs = 15000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try { 
+    return await fetch(resource, { ...options, signal: ctrl.signal }); 
+  } catch (err) { 
+    if (err?.name === 'AbortError') throw new Error('連線超時，Google 伺服器反應過慢'); 
+    throw err; 
+  } finally { 
+    clearTimeout(timer); 
+  }
+}
+  
 function fmtMoney(n){ return '$' + Number(n||0).toLocaleString('zh-Hant'); }
 function nowTime() {
   const d = new Date();
