@@ -290,7 +290,7 @@ async function detectPausedStatus(){
   const date = document.querySelector('#datePicker')?.value || todayLocal();
   const url  = `${ENDPOINT}?action=list&_=${Date.now()}&apiKey=${API_KEY}&date=${date}`;
   try{
-    const r = await fetch(url);
+    const r = await fetchWithTimeout(url, {}, 15000); // 15秒超時
     const d = await r.json();
     if (d && d.error === 'paused') IS_PAUSED = true;
     else if (d && d.ok === true) IS_PAUSED = false;
@@ -333,7 +333,7 @@ async function loadOrders(){
   const url = `${ENDPOINT}?action=list&_=${Date.now()}&apiKey=${API_KEY}&date=${date}`;
 
   try {
-    const r = await fetch(url);
+    const r = await fetchWithTimeout(url, {}, 15000); // 15秒超時
     const d = await r.json();
 
     if (d && d.error === 'paused'){
