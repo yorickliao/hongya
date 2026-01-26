@@ -981,14 +981,7 @@ const ITEM_OPTION_RULES = {
   toast_mash_salad: [
     { type:'toggle', key:'extra_egg', label:'加蛋', price:15 },
   ],
-  snack_fried_egg: [
-    {
-      type: 'choice', key: 'doneness', label: '熟度', options: [
-        { label: '全熟', value: 'well_done', price: 0 },
-        { label: '半熟', value: 'soft_yolk', price: 0 },
-      ],
-    },
-  ],
+
   // ★ 蔥抓餅加蛋（可加料／不加蛋菜醬）
   snack_scallion_pancake_egg: [
     { type:'toggle', key:'egg',         label:'加蛋',             price:15 },
@@ -1609,7 +1602,11 @@ function readSelectionsFor(item){
 
 
   // 一般類（漢堡/吐司/蛋餅/總匯/客製）
-  const rules = CATEGORY_OPTION_RULES[item._catKey] || [];
+  // ★ 修改：合併 分類規則 與 單品規則
+  const baseRules = CATEGORY_OPTION_RULES[item._catKey] || [];
+  const extraRules = ITEM_OPTION_RULES[item.id] || []; 
+  const rules = [...baseRules, ...extraRules];
+
   let delta = 0;
   const parts = [];
   rules.forEach(rule=>{
@@ -1625,13 +1622,14 @@ function readSelectionsFor(item){
       const opt = sel?.selectedOptions?.[0];
       if (opt){
         const text  = opt.textContent.trim().replace(/（\+\d+）$/, '');
+        // ★ 修改：如果是單純的選項 (如熟度)，不需要特別加 label 前綴，直接顯示值即可，或者依需求保留
+        // 這裡維持原本邏輯： "熟度：全熟"
         const label = rule.label + '：' + text;
         const p = Number(opt.dataset.price || 0);
         delta += p;
         parts.push(label);
       }
     }
-
   });
 
   // ★ 升級套餐（預設「不換飲料」送中杯紅茶 / 中杯奶茶；若換其它或改變杯型/溫度 → 補最終價 − 基準(15/20)）
