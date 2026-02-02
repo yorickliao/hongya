@@ -348,6 +348,8 @@ async function loadOrders(){
   const url = `${ENDPOINT}?action=list&_=${Date.now()}&apiKey=${API_KEY}&date=${date}`;
 
   try {
+
+    await apiSync();
     const r = await fetchWithTimeout(url, {}, 15000); // 15秒超時
     const d = await r.json();
 
@@ -532,6 +534,20 @@ function renderCompletedOrders(){
   }
   c.innerHTML = html;
 }
+
+async function apiSync(){
+  const payload = { action: 'sync', apiKey: API_KEY };
+  const r = await fetchWithTimeout(ENDPOINT, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }, 20000);
+  const t = await r.text();
+  let d; try { d = JSON.parse(t); } catch { throw new Error('sync 回應格式錯誤'); }
+  // sync 即使 appended=0 也算成功
+  if (!d.ok) throw new Error(d.error || 'sync_failed');
+  return d;
+}
+
 
 /* ===== 售完管理：API 與渲染 ===== */
 async function apiGetMenu(){
