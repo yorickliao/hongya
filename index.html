@@ -306,7 +306,7 @@
 
 <script>
 /* === 設定（請替換為你的 GAS 部署網址 / API Key）=== */
-const ENDPOINT = 'https://script.google.com/macros/s/AKfycbx7SxB6k1lC4p9V-eGzv9kDsv9P2SfRkmtfZuLp9T-ovTh7d4ioAsaVL-7NiVQZfH8S/exec';
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycbyOXrGGEDE9X3ms94DfgtYdW-VftdgUND7pAV9hrkVhrfueXVXvknCMoysV1eWXxdkp/exec';
 const API_KEY  = 'hongya';
 
 /* === 工具 & 狀態 === */
@@ -1884,6 +1884,21 @@ async function enforceSoldOutOnMenu(force = false) {
 }
 
 /* === Apps Script API：reserve + confirm + sync === */
+
+const PENDING_ORDER_KEY = 'pendingOrderId';
+
+function getOrCreatePendingOrderId(){
+  const existed = localStorage.getItem(PENDING_ORDER_KEY);
+  if (existed) return existed;
+  const id = (crypto?.randomUUID?.() || (Date.now()+'-'+Math.random().toString(16).slice(2)));
+  localStorage.setItem(PENDING_ORDER_KEY, id);
+  return id;
+}
+function clearPendingOrderId(){
+  localStorage.removeItem(PENDING_ORDER_KEY);
+}
+
+  
 async function apiReserve(orderId, pickupAtHintISO, diningType, tableNo){
   const body = { apiKey: API_KEY, action: 'reserve', orderId };
   if (pickupAtHintISO) body.pickupAtHint = pickupAtHintISO;
@@ -1984,7 +1999,7 @@ async function onSubmitOrder(e) {
     });
     const subtotal = items.reduce((s, it) => s + it.price * it.qty, 0);
 
-    const orderId = (crypto?.randomUUID?.() || (Date.now()+'-'+Math.random().toString(16).slice(2)));
+    const orderId = getOrCreatePendingOrderId();
     const order = {
       orderId,
       customer: { name, phone },
@@ -2018,7 +2033,10 @@ async function onSubmitOrder(e) {
     } catch (_) {}
     
     // 到這裡才顯示成功視窗
-    el('#pickupNoText').textContent = String(res.pickupNo ?? '');
+    // 到這裡才顯示成功視窗（✅ 用 confirm 回傳的號碼）
+    el('#pickupNoText').textContent = String(c.pickupNo ?? '');
+    
+    // 取餐時間/桌號：reserve 回來的 pickupTime 仍可用（外帶）
     if (diningType === 'takeout') {
       el('#successTakeoutTime').classList.remove('hidden');
       el('#successTable').classList.add('hidden');
@@ -2030,9 +2048,13 @@ async function onSubmitOrder(e) {
     }
     el('#successModal').classList.remove('hidden');
     
+    // ✅ confirm 成功才清 pendingOrderId（避免重送變新單）
+    clearPendingOrderId();
+    
     // 最後才清空購物車
     state.cart = [];
     renderCart();
+
     
   } catch (err) {
     el('#formError').textContent = '送單失敗：' + (err?.message || '請稍後再試');
