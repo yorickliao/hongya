@@ -1998,7 +1998,26 @@ async function onSubmitOrder(e) {
 
     const res = await apiReserve(orderId, pickupAtHintISO, diningType, tableNo);
     if (!res.ok) { showErr(mapApiError(res.error, res.message)); return; }
-
+    
+    // 先不要顯示成功視窗，先 confirm（必要）
+    let c;
+    try {
+      c = await apiConfirm(order);
+    } catch (e) {
+      showErr('寫入訂單失敗，請再按一次送出（或稍後再試）。');
+      return;
+    }
+    if (!c || !c.ok) {
+      showErr(mapApiError(c?.error, c?.message || '寫入訂單失敗，請再試一次'));
+      return;
+    }
+    
+    // confirm 成功後（可選）做一次 sync
+    try { 
+      await apiSync(); 
+    } catch (_) {}
+    
+    // 到這裡才顯示成功視窗
     el('#pickupNoText').textContent = String(res.pickupNo ?? '');
     if (diningType === 'takeout') {
       el('#successTakeoutTime').classList.remove('hidden');
@@ -2010,11 +2029,11 @@ async function onSubmitOrder(e) {
       el('#tableNoText').textContent = tableNo || '';
     }
     el('#successModal').classList.remove('hidden');
-
-    (async () => { try { const c = await apiConfirm(order); if (c && c.ok) { apiSync(); } } catch (_) {} })();
-
-    state.cart = []; renderCart();
-
+    
+    // 最後才清空購物車
+    state.cart = [];
+    renderCart();
+    
   } catch (err) {
     el('#formError').textContent = '送單失敗：' + (err?.message || '請稍後再試');
   } finally { setBusy(false); }
