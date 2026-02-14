@@ -1830,7 +1830,7 @@ function chooseEarliestSlot(now = new Date()){
 
 /* === Sold-out 狀態 === */
 let SOLDOUT_CACHE = { ts: 0, byName: new Map() };
-const SOLDOUT_TTL_MS = 30 * 1000;
+const SOLDOUT_TTL_MS = 300 * 1000;
 
 async function fetchMenuStatus(force=false){
   const now = Date.now();
